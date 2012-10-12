@@ -1,0 +1,489 @@
+\documentclass[ignorenonframetext,article,shortnames]{beamer}
+\usepackage{url}
+\usetheme{Boadilla}
+\mode<presentation>
+\usecolortheme{seahorse}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{Sweave}
+\usenavigationsymbolstemplate{}
+\RequirePackage{fancyvrb}
+\RequirePackage{listings}
+% %%% important: keep the following comment in
+% %%% (see https://mailman.stat.ethz.ch/pipermail/r-help/2009-July/204747.html)
+% this comment persuades Sweave not to insert \usepackage{Sweave}
+%
+% -------------------------------------------------------------------------------
+\SweaveOpts{keep.source=TRUE}
+% -------------------------------------------------------------------------------
+
+\title{Programming in R\\
+Part 1: Control Structures}
+\author{Leslie Cope}
+\date{November 16, 2011}
+
+
+\begin{document}
+\begin{frame}
+\maketitle
+\end{frame}
+
+<<<echo=F>>=
+options(width = 55)
+@
+
+\begin{frame}[fragile]
+  \frametitle{Programming in R}
+  There are lots of built in functions, but sooner or later you will
+  need to assemble these into customized applications.  For example,
+  you may want  to run the same simple function on
+  a bunch of different genes, and collate the results.
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+  \frametitle{Back to Basics}
+  The "=" sign is used to assign values to variables
+<<assignment>>=
+x=1:10
+plot(x,col="blue")
+@
+But  "==" is used to test for equality.   The result is a
+logical variable, {\bf T} or {\bf F} and the operation is vectorized.
+<<equality>>=
+x==5
+3^2==9
+@
+Other relations include <, >, <=, >=, !=
+<<equality2>>=
+!(x==5)
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Use these within square brackets to subset data}
+
+<<relations>>=
+data=data.frame(names=c("Alice","Bob","Carla","Don"),
+ages=c(33,52,65,45),
+sex=c("F","M","F","M"))
+data[data$ages<=50,]
+data[data$ages<=50 & data$sex=="M",]
+data[data$ages<=50 | data$sex=="M",]
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Exercise}
+<<irisExercise,eval=F>>=
+data(iris)
+help('iris')
+names(iris)
+@
+  Use logical rules to find the subset of cases that meet these criteria:
+\begin{enumerate}
+  \item Species is not {\tt setosa}
+    \item Petal.length >= 5cm.
+      \item or Sepal.length >=  7cm.
+    \end{enumerate}
+
+\end{frame}
+
+
+  \begin{frame}[fragile]
+  \frametitle{Another useful test}
+
+<<elementof>>=
+names=c("Alice","Bob","Carla","Don")
+directors=c("Alice","Don","Eliza","Fred")
+names[is.element(names,directors)]
+names[names%in%directors]
+@
+
+\end{frame}
+
+ \begin{frame}[fragile]
+  \frametitle{A common problem}
+  Suppose we have a genetic database and want to return the average
+  expression value when a gene name is provided.
+<<databaseSearch,eval=F>>=
+database=rbind(1:10,5:14,11:20)
+rownames(database)=c("ESR1", "P53", "BRAF")
+mean(database["ESR1",])
+@
+
+<<databaseSearchFail,eval=F>>=
+mean(database["BRCA1",])
+@
+\begin{verbatim} Error in mean(database["BRCA1", ]) : subscript out of bounds
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Conditional Execution}
+  A standard approach to avoiding this kind of error is to execute the
+  command only conditionally, after verifying that prerequisites are met.
+\begin{enumerate}
+    \item Enter Gene name
+
+\item      If Gene is in database, calculate the mean expression
+  value, otherwise return {\bf NA}
+     \end{enumerate}
+
+\end{frame}
+
+  \begin{frame}[fragile]
+  \frametitle{In R}
+
+<<ifthen>>=
+database=rbind(1:10,5:14,11:20)
+rownames(database)=c("ESR1", "P53", "BRAF")
+gene="BRCA1"
+if(gene %in% rownames(database)){
+  ans=mean(database[gene,])
+}else{ans=NA}
+ans
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Vectorized version}
+
+<<ifthen2>>=
+age=17
+if(age>=18){print("voting age")}else{print("minor")}
+
+age=16:19
+ifelse(age>=18, yes="voting age",no="minor")
+
+@
+
+\end{frame}
+\begin{frame}[fragile]
+  \frametitle{Loops}
+  Sooner or later
+  you will want to cycle through a vector or matrix, performing the
+  same operation for each subject.  A few specific functions like rowMeans are available
+<<loops>>=
+data=matrix(1:100,nrow=10)
+rowMeans(data)
+@
+But generally this is accomplished  by setting up a vector to catch the
+answer, and then looping through the subjects.
+<<loop examples2>>=
+ans=rep(NA,times=nrow(data))
+for(i in 1:10){
+ans[i]=mean(data[i,])
+}
+ans
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{You can loop on any vector}
+ Suppose the data matrix has row names
+<<loopingNames>>=
+data=matrix(1:100,nrow=10)
+rownames(data)=letters[1:10]
+rowMeans(data)
+@
+We can get the same result with loops.
+<<loopingNames2>>=
+ans=rep(NA,times=nrow(data))
+names(ans)=rownames(data)
+for(i in rownames(data)){
+  ans[i]=mean(data[i,])
+}
+ans
+@
+
+\end{frame}
+\begin{frame}[fragile]
+  \frametitle{And of course you can use an if-then within a loop}
+
+<<loopIfThen>>=
+data=matrix(1:100,nrow=10)
+rownames(data)=letters[1:10]
+rownames(data)
+query=c("d","b","f","a","m")
+ans=rep(NA,times=length(query))
+names(ans)=query
+for(i in query){
+  if(i %in% rownames(data)){ans[i]=mean(data[i,])}else{ans[i]=NA}
+}
+ans
+@
+
+\end{frame}
+\begin{frame}[fragile]
+\frametitle{Exercise}
+<<irisMeanExercise,eval=F>>=
+data(iris)
+help('iris')
+names(iris)
+@
+  Use for loops and  if-thens to calculate the average Petal.Length of
+  setosa irises
+
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Building the output object}
+  {\bf For}  loops have to have an appropriate data structure ready to capture the
+  answer.
+<<initiation>>=
+
+for(i in query){
+  if(i %in% rownames(data)){ans=mean(data[i,])}else{ans[i]=NA}
+}
+ans
+ans=rep(NA,times=length(query))
+names(ans)=query
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Building the output object}
+  You can always go with a list for the output. Then you don't have to
+  anticipate everything.
+<<listInitiation>>=
+data=rbind(c("a","a","c"),c("a","b","c"),c("a","a","a"))
+rownames(data)=c("AA","AB","AC")
+ans=list()
+
+for(i in rownames(data)){
+  ans[[i]]=unique(data[i,])}
+ans
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{matrix vs. data.frame}
+ The feature of data.frames is that each column can represent a
+ different data type, so it doesn't always make sense to conduct
+ operations by row and data.frames resist attempts to do that.
+<<data.frame>>=
+data=matrix(1:100,nrow=10)
+dataf=data.frame(data)
+mean(data[1,])
+mean(dataf[1,])
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{While loops}
+  repeat the same operation until a test condition is met
+<<while>>=
+ z= 0
+        while(z<5) {
+                z = z+1
+                print(z)
+        }
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{apply}
+  R has a very convenient way to perform an operation on each row or
+  column  of a matrix
+  \begin{verbatim}
+apply                   package:base                   R Documentation
+
+Apply Functions Over Array Margins
+
+Description:
+
+     Returns a vector or array or list of values obtained by applying a
+     function to margins of an array or matrix.
+
+Usage:
+
+     apply(X, MARGIN, FUN, ...)
+
+
+\end{verbatim}
+
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{For example}
+
+<<apply>>=
+data=matrix(1:100,nrow=10)
+rownames(data)=letters[1:10]
+ans=apply(data,1,mean)
+ans
+ans=apply(data,1,mean,na.rm=T)
+@
+
+\end{frame}
+\begin{frame}[fragile]
+  \frametitle{Exercise}
+  How would you do this with apply?
+<<uniqueExercise>>=
+data=rbind(c("a","a","c"),c("a","b","c"),c("a","a","a"))
+rownames(data)=c("AA","AB","AC")
+ans=list()
+
+for(i in rownames(data)){
+  ans[[i]]=unique(data[i,])}
+ans
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{apply vs for loop}
+ For loops:
+ \begin{enumerate}
+   \item easy to implement complex procedures
+     \item have to set up output object
+   \item usually slower
+
+   \end{enumerate}
+   apply
+ \begin{enumerate}
+   \item must supply a function name, so complex procedures must be
+     formalized as a function before you can use apply
+     \item output is handled automatically
+       \item usually faster
+   \end{enumerate}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+  \frametitle{lapply}
+ {\bf lapply} operates on the elements of a list.  One benefit is that
+ the elements of a list don't have to have the same length, unlike a
+ matrix or data.frame,
+<<lapply>>=
+data=list("a"=1:10,"b"=7:11, "c"=9:29)
+ans=lapply(data,mean)
+ans
+@
+The output of {\bf lapply} is always a list
+\end{frame}
+\begin{frame}[fragile]
+  \frametitle{sapply}
+ {\bf sapply} is just like {\bf lapply} except that it tries to return
+ the answer as a vector or matrix, if possible, in order to simplify
+ things a little.
+<<sapply>>=
+data=list("a"=1:10,"b"=7:11, "c"=9:29)
+ans=sapply(data,mean)
+ans
+@
+\end{frame}
+\begin{frame}[fragile]
+  \frametitle{tapply}
+ {\bf tapply} generalized the idea to a {\it ragged array}, providing
+ a sort of hybrid between apply and lapply.
+\begin{verbatim}
+  tapply                  package:base                   R Documentation
+
+Apply a Function Over a Ragged Array
+
+Description:
+
+     Apply a function to each cell of a ragged array, that is to each
+     (non-empty) group of values given by a unique combination of the
+     levels of certain factors.
+
+Usage:
+
+     tapply(X, INDEX, FUN = NULL, ..., simplify = TRUE)
+
+  \end{verbatim}
+\end{frame}
+\begin{frame}[fragile]
+  \frametitle{tapply}
+ The {\bf INDEX} is a grouping variable of the same length as {\bf
+   X}. The idea is that we apply FUN to subsets of X, defined by INDEX
+<<tapply>>=
+data(iris)
+ans=tapply(iris$Petal.Length,iris$Species,mean)
+ans
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{sweep}
+  The syntax for {\bf sweep} looks a lot like that for apply
+  \begin{verbatim}
+
+Sweep out Array Summaries
+
+Description:
+
+     Return an array obtained from an input array by sweeping out a
+     summary statistic.
+
+Usage:
+
+     sweep(x, MARGIN, STATS, FUN="-", check.margin=TRUE, ...)
+
+
+\end{verbatim}
+\end{frame}
+\begin{frame}[fragile]
+  \frametitle{sweep}
+
+<<loop examples names test>>=
+data=matrix(1:100,nrow=10)
+means=apply(data,1,mean,na.rm=T)
+data2=sweep(data,1,means,"-")
+apply(data2,1,mean)
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Golub exercise}
+ Repeat Rob Scharpf's exercise using apply functions, and using for
+loops.
+<<getGolub>>=
+library(golubEsets)
+library(Biobase)
+data(Golub_Train, package="golubEsets")
+data <- exprs(Golub_Train)
+gender <- pData(phenoData(Golub_Train))$Gender
+rowMeans(data[1:4,])
+apply(data[1:4,],1,mean,na.rm=TRUE)
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Maintaining Scripts}
+ R can be used interactively for simple things.   Since I always have
+ it open, I use as my calculator and enter basic arithmetic problems
+ right into the command line.  The complex, multi-line procedures
+ described here are too complicated to use that way, though and if you
+ have data from a project it is just good sense to keep track of
+ everything in  a .r
+ file.
+
+
+<<source, eval=F>>=
+source("rcont.r")
+@
+
+\end{frame}
+
+
+
+\end{document}

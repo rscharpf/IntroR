@@ -1,0 +1,181 @@
+\documentclass[ignorenonframetext,article,shortnames]{beamer}
+\usepackage{url}
+\usetheme{Boadilla}
+\mode<presentation>
+\usecolortheme{seahorse}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{Sweave}
+\usenavigationsymbolstemplate{}
+\RequirePackage{fancyvrb}
+\RequirePackage{listings}
+% %%% important: keep the following comment in
+% %%% (see https://mailman.stat.ethz.ch/pipermail/r-help/2009-July/204747.html)
+% this comment persuades Sweave not to insert \usepackage{Sweave}
+%
+% -------------------------------------------------------------------------------
+\SweaveOpts{keep.source=TRUE,prefix.string=Reproducibility-}
+% -------------------------------------------------------------------------------
+
+\title{Building class-specific versions of standard R functions.  }
+\author{Leslie Cope}
+\date{May 23, 2012}
+
+\begin{document}
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+
+
+ \begin{frame}[fragile]
+\frametitle{Intro}
+R tries to take care of certain things neatly in the background so you don't
+  have to worry about them.
+<<eval=TRUE, keep.source=TRUE>>=
+nms=c(5,1,10); chrs=c('b','a','c')
+sort(nms)
+sort(chrs)
+@
+  Recollect that it is the {\bf class} attribute of an object that determines how
+  the object is handled.
+\end{frame}
+
+\begin{frame}
+\frametitle{How does this work?}
+  R uses two different approaches to accomplish this...
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The {\bf S3} version}
+   This is the older and simpler version.  Just make an object, and give it a class assignment, using the {\tt class()} function in R.
+
+<<s3_class_def>>=
+ x=matrix(sample(1:50),nrow=10)
+ class(x)="myMatrix"
+@
+
+Then write a function with a name of the form, {\tt functionname.classname}.
+
+<<s3_method_def>>=
+ summary.myMatrix=function(x){
+ 	print(paste("The column means of x are ",
+        paste(apply(x,2,mean),collapse=", "),sep=""))
+ }
+ plot.myMatrix=function(x){
+ 	pairs(x)}
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+ \frametitle{The {\bf S3} version}
+Then call the function normally, without the {\tt classname} subscript.
+
+<<s3_method_usage, fig=TRUE>>=
+summary(x)
+ plot(x)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+ \frametitle{Issues with the  {\bf S3} version}
+This approach doesn't offer any protection against errors though.  I
+can easily misassign the class label to a different type of object
+<<s3_error_1,eval=FALSE>>=
+y=function(x) return(x)
+ class(y)="myMatrix"
+ plot(y)
+@
+
+ \begin{verbatim}
+ Error:  chunk 4 (label = s3_error_1)
+Error in as.data.frame.default(x) :
+  cannot coerce class '"myMatrix"' into a data.frame
+  \end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The {\bf S4} version}
+So a second method, called {\bf S4} was developed.  It takes more work
+to set up, but builds in protections that prevent errors.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Defining an S4 class}
+  S4 classes are formally defined, so that each {\bf slot} has to be
+  of a particular class.
+<<s4.def,eval=TRUE>>=
+library(methods)
+setClass(Class="annotatedData",
+representation(data="numeric",annotation="character"))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Making an object}
+The {\bf new} command is used to create a new object within an S4
+class.  You will get an error message if the thing you try to put in
+each slot doesn't match the definition.
+<<S4.new,eval=TRUE>>=
+x=new("annotatedData",data=1:50,
+annotation="These are ages for randomly selected subjects")
+@
+but
+<<s4.fail,eval=FALSE>>=
+
+y=new("annotatedData",data=letters[1:50],annotation="These are names for randomly
+selected subjects")
+@
+\begin{verbatim}
+Error:  chunk 7 (label = S4.new)
+Error in validObject(.Object) :
+  invalid class "annotatedData" object: invalid object for slot "data" in class "annotatedData": got class "character", should be or extend class "numeric"
+\end{verbatim}
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Defining an S4 class}
+The resulting objects behave like lists, but are handled slightly
+differently.
+<<s4.objects,eval=TRUE>>=
+names(x)
+@
+<<s4.objectsdollar,eval=FALSE>>=
+x$data
+@
+\begin{verbatim}
+Error in x$data : $ operator not defined for this S4 class
+\end{verbatim}
+<<s4.objectsat,eval=TRUE>>=
+slotNames(x)
+x@data
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Defining S4 methods}
+
+<<S4.method,eval=TRUE>>=
+setMethod("summary",signature(object='annotatedData'),
+  function(object) cat(paste(object@annotation,"\n",
+ "The mean value is ",round(mean(object@data),3),"\n",sep="")))
+
+summary(x)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Seeing the code S4 methods}
+  The function definition is kind of buried in R, and a special
+  command is needed to get it.
+<<S4.getmethod,eval=TRUE>>=
+getMethod("summary","annotatedData")
+@
+\end{frame}
+
+\end{document}

@@ -1,0 +1,96 @@
+\documentclass{beamer}
+\usetheme{Warsaw}
+
+\usepackage{graphicx, color, url, verbatim}
+
+\AtBeginDocument{
+\DefineVerbatimEnvironment{Sinput}{Verbatim} {xleftmargin=0em,fontsize=
+\footnotesize}
+\DefineVerbatimEnvironment{Soutput}{Verbatim}{xleftmargin=0em,fontsize=
+\footnotesize}
+\DefineVerbatimEnvironment{Scode}{Verbatim}{xleftmargin=0em,fontsize=
+\footnotesize}
+}
+
+
+\title[Functions]{Functions in R}
+\author[E. J. Fertig]{Elana J. Fertig \\ Johns Hopkins University \\ Department of Oncology, Division of Biostatistics and Bioinformatics}
+\date{Statistics and Data Analysis Using R \\ 16 May 2012}
+
+\setcounter{tocdepth}{1}
+
+\begin{document}
+
+\begin{frame}[plain]
+\titlepage
+\end{frame}
+
+\begin{frame}[plain]
+\frametitle{Lesson Overview: The why and how of working with functions in R.}
+\begin{enumerate}
+\item Facilitating good programming practices with functions.
+\item Creating functions with R.
+\item Interactions between user-definined and library-based functions.
+\item Improved debugging with functions.
+\end{enumerate}
+\end{frame}
+
+\section{Introduction to functions}
+
+\begin{frame}
+\frametitle{What is a function?}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{What is a function?}
+
+\par INCLUDE A FIGURE DEMONSTRATING FUNCTION INPUT / OUTPUT.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Why should we use functions?}
+\end{frame}
+
+\begin{frame}
+\frametitle{Why should we use functions?}
+\begin{itemize}
+\item Re-use of code for commonly performed tasks.
+\item Easier to read code.
+\item Reproducibility of results.
+\item Sharing methodology.
+\end{itemize}
+\end{frame}
+
+\section{Structure of functions in R}
+
+\subsection{Using R functions}
+
+\begin{frame}
+\frametitle{Example of an R function}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Interfacing with an R function}
+\begin{verbatim}
+> y <- function(x1, x2, ...)
+\end{verbatim}
+\begin{itemize}
+\item ``function'' is the name of the function
+\item y is the function output
+\item x1, x1, \ldots are the function input
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Interfacing with an R function}
+\begin{verbatim}
+> y <- function(x1, x2, ...)
+\end{verbatim}
+\begin{verbatim}
+> y <- mean(1:10)
+\end{verbatim}
+\end{frame}
+
+\end{document}

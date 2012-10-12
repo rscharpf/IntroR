@@ -1,0 +1,446 @@
+\documentclass[ignorenonframetext,article,shortnames]{beamer}
+\usepackage{url}
+\usetheme{Boadilla}
+\mode<presentation>
+\usecolortheme{seahorse}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{color}
+\usepackage{Sweave}
+\usenavigationsymbolstemplate{}
+\RequirePackage{fancyvrb}
+\RequirePackage{listings}
+
+\newcommand{\R}{\textsf{R}}
+% %%% important: keep the following comment in
+% %%% (see https://mailman.stat.ethz.ch/pipermail/r-help/2009-July/204747.html)
+% this comment persuades Sweave not to insert \usepackage{Sweave}
+%
+% -------------------------------------------------------------------------------
+\SweaveOpts{keep.source=TRUE}
+% -------------------------------------------------------------------------------
+
+\title{Working with data in R}
+\author{Leslie Cope}
+\date{April 20, 2012}
+
+\begin{document}
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+  \frametitle{Behind the scenes in R: An example}
+  R tries to take care of certain things neatly in the background so you don't
+  have to worry about them.
+<<eval=TRUE, keep.source=TRUE>>=
+nms=c(5,1,10); chrs=c('b','a','c'); chrnms=c('S5','S1','S10')
+sort(nms)
+sort(chrs)
+sort(chrnms)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Behind the scenes in R: Another example}
+ Here is another case where a function works differently
+ depending on data type.
+<<eval=TRUE, keep.source=TRUE>>=
+vec1=c(5,1,10); vec2=c(3,5,7); mat1=cbind(vec1,vec2)
+length(vec1)
+dim(vec1)
+
+length(mat1)
+dim(mat1)
+@
+\end{frame}
+
+\begin{frame}
+  \frametitle{How does this work}
+In R, a variable name {\bf x} is
+ associated not only with the value {\bf 3} but also  annotations documenting the type of object.
+ \begin{description}
+   \item[Mode] Each object has exactly 1 mode describing what
+    kind it is.  Simple, {\it
+       atomic} variables like {\bf x=3} are either {\it integer,
+       numeric, character,} or {\it logical}.  Other modes include {\it list} and {\it function}.
+     \item[Class] Classes govern how R handles the object (this
+       is why {\bf sort()}  work differently
+       for different objects)
+       \begin{itemize}
+         \item For simple objects the
+       default class is often derived from the mode.
+       \item Objects may have more
+       than 1 class -complex classes {\it extending} simpler
+       ones with additional handling instructions for special cases.
+       \end{itemize}
+       \item[Attributes] examples include names for the elements of a vector,
+         and the dimensions of a matrix as well as its row and column
+         names.
+     \end{description}
+\end{frame}
+
+\begin{frame}[fragile]
+       \frametitle{}
+Most of the time, we don't have to explicitly specify the mode, class or
+attributes of R objects.  Instead R figures these things out as data
+is entered.
+\begin{itemize}
+\item things that can be interpreted as numeric are given that mode
+<<eval=FALSE, keep.source=TRUE>>=
+age=32
+@
+\item quotation marks indicate character strings
+<<eval=FALSE, keep.source=TRUE>>=
+name='Jack'
+@
+\item the reserved terms TRUE, T, FALSE and F indicate logical values
+<<eval=FALSE, keep.source=TRUE>>=
+paid=TRUE
+@
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+ \frametitle{The Factor Class}
+<<eval=FALSE, keep.source=TRUE>>=
+  fact1=factor(c(1,2,1,2,1,3)); fact2=factor(c('a','b','a','a','c'))
+  class(fact1); mode(fact1)
+  class(fact2); mode(fact2)
+  levels(fact1)
+  levels(fact2)
+  levels(fact2)=levels(fact1)
+@
+  This class is intended for qualitative variables
+<<eval=FALSE, keep.source=TRUE>>=
+ x=c(1,2,1,2,1,3); y=factor(x)
+  table(x)
+  table(y)
+  table(x[1:5])
+  table(y[1:5])
+@
+\end{frame}
+
+
+\begin{frame}{Data Structures}
+  \end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Vectors}
+All the elements of a vector have to have the same mode, if you try to
+put different modes together into the same vector, they will be
+coerced into the mode representing the lowest common denominator.
+<<eval=FALSE, keep.source=TRUE>>=
+record=c('Jack',32,TRUE)
+mode(record)
+@
+Logical variables can also be treated as numeric
+with TRUE=1 and FALSE=0
+
+<<eval=FALSE, keep.source=TRUE>>=
+paid=c(T,T,F,T,F)
+sum(paid)
+paid+3
+mode(c(T,32))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+       \frametitle{Making vectors}
+There are several functions available for building vectors
+<<eval=FALSE, keep.source=TRUE>>=
+vec=1:10
+vec=c(1,3,4,5)
+vec=rep(1,10)
+vec=seq(from=1,to=10,by=2)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+       \frametitle{Matrices}
+A 2-D array of values, called a matrix in R, is a vector with a
+dimension attribute that describes the number of rows and columns.
+In fact you can turn any vector of length n*m into a matrix with n
+rows and m columns simply by attaching a dimension attribute.
+<<eval=FALSE, keep.source=TRUE>>=
+vec=mat=1:10
+vec
+dim(mat)=c(2,5)
+mat
+@
+Notice that the vector was written into the matrix by column.
+The same thing can be done with the {\bf matrix} function
+<<eval=FALSE, keep.source=TRUE>>=
+vec=1:10
+mat=matrix(vec,nrow=2)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+       \frametitle{Matrices}
+You can also make matrices by {\it gluing} several vectors of the same
+length together
+<<eval=FALSE, keep.source=TRUE>>=
+x=seq(from=1,to=9,by=2); y=seq(from=2,to=10,by=2)
+mat1=rbind(x,y)
+mat2=cbind(x,y)
+@
+ mat2 is the {\bf transpose} of mat1, i.e. it has the same values, but the roles of row and
+column have been switched.  There is  a transpose function included in
+R.
+<<eval=FALSE, keep.source=TRUE>>=
+mat2
+t(mat1)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Subsetting Matrices }
+As with vectors, use the square bracket notation but with 2, comma-separated values
+between the brackets {\bf matrix[rows,columns]}.
+<<eval=FALSE, keep.source=TRUE>>=
+mat=cbind(1:5,6:10)
+mat[1,3]
+mat[1:2,1]
+mat[1,]
+@
+
+you can replace elements of a matrix the same way
+<<eval=FALSE, keep.source=TRUE>>=
+ mat[2,]=11:15
+@
+Actually, since a matrix is just a vector thats {\it folded} up
+columnwise, you can retrieve elements using vector bracket notation
+<<eval=FALSE, keep.source=TRUE>>=
+ mat[2]
+ mat[6]
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{General n-dimensional arrays}
+Arrays extend the matrix concept to as many dimensions as you wish.
+<<eval=FALSE, keep.source=TRUE>>=
+array3D=1:24
+dim(array3D)=c(4,3,2)
+
+array4D=1:120
+dim(array4D)=c(5,4,3,2)
+@
+You subset general arrays just like matrices, you just need more
+commas.
+<<eval=FALSE, keep.source=TRUE>>=
+array3D[1,1,2]
+array3D[1,,]
+@
+\end{frame}
+
+\begin{frame}[fragile]
+       \frametitle{Lists}
+The {\bf list} is the most general data structure there is in R.
+Like an ordinary vector it has length but not dimensions, the
+distinction is that the elements can be of any class.
+<<eval=FALSE, keep.source=TRUE>>=
+mylist=list('name'='fred', 'age'=32, 'degrees'=c('BS', 'MS', 'PHD'))
+mylist()
+length(mylist)
+length(mylist[[3]])
+class(mylist[[3]])
+class(mylist$age)
+names(mylist)[1]='Name'
+mylist[1:2]
+length(mylist[3])
+@
+The {\bf \$} operator uses {\it partial matching} when looking for
+elements by name, so you an abreviate the name as long as the
+abreviation is still unique.
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+       \frametitle{List Exercise}
+Below are the components of a medical record for a patient with Type-2
+diabetes. Glucose and weight are vectors of measurements taken during
+the patient's last 4 office visits.   Assemble the components into a
+list, with names,  and then working from the list
+rather than the free standing elements, use R functions to identify
+the time point at which weight was highest, and return the glucose
+level at that time point.
+
+<<eval=FALSE, keep.source=TRUE>>=
+name='fred'
+age=32
+weight=c(160, 175, 212, 203)  #measured in lb
+glucose=c(150, 145, 235, 240)  #measured in mg/dl
+names(weight)=names(glucose)=c('visit_1','visit_2','visit_3','visit_4')
+@
+Hint: I used the functions, {\bf list(),which()} and {\bf max()} as well
+as square brackets and the  {\bf \$} and {\bf ==} operators.
+\end{frame}
+
+\begin{frame}[fragile]
+       \frametitle{Data Frames}
+       \begin{itemize}
+         \item The {\bf data frame} is an extension of the list that has some of the
+ characterisitcs of an array.
+ \begin{itemize}
+   \item variables are represented as columns, they can be of
+     different clases, and can be accessed by name using the {\bf \$} operator
+     \item subjects are represented as rows
+       \item R is happy to perform vector operations on columns but
+         resistant to operating on rows... why?
+   \end{itemize}
+ \item It is the main R class for storing a
+ dataset.
+   \end{itemize}
+<<eval=FALSE, keep.source=TRUE>>=
+age=c(6, 6, 4)
+name=c('jack', 'zoe', 'stella')
+grade=c('k','k','pre-k')
+record=data.frame(age,name,grade)
+record
+@
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+       \frametitle{Subsetting Data Frames}
+       \begin{itemize}
+         \item use square brackets, with a comma just like matrix
+           \item indices, names, and logical vectors can all be used
+             inside the brackets to indicate which elements to retrieve
+             \item the {\bf \$} operator can be used to call the
+               variables (columns) by name.
+               \item because the data frame is both array and list,
+                 x[1:3] will give you the {\it sub-dataframe}
+                 consisting of all rows and the first 3 columns
+                 \item likewise, in addition to {\bf colnames} and {\bf rownames}, a
+                 dataframe can have a simple {\bf names} attribute
+                 giving the names of the variables.
+   \end{itemize}
+<<eval=FALSE, keep.source=TRUE>>=
+age=c(6, 6, 4)
+name=c('jack', 'zoe', 'stella')
+grade=c('k','k','pre-k')
+record=data.frame(age,name,grade)
+record[c(1,3)]
+record$name
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+       \frametitle{Data Frame Exercise}
+As above, glucose and weight are vectors of measurements taken during
+a patient's last 4 office visits.   Put these variables into a
+dataframe and sort the rows so that they are arranged by weight, in
+decreasing order.
+
+<<eval=FALSE, keep.source=TRUE>>=
+weight=c(160, 175, 212, 203)  #measured in lb
+glucose=c(150, 145, 235, 240)  #measured in mg/dl
+names(weight)=names(glucose)=c('visit_1','visit_2','visit_3','visit_4')
+@
+Hint: I used the functions, {\bf data.frame(),  order()} as well
+as square brackets and the  {\bf \$}  operator.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Converting data}
+R provides functions for converting between data types.  The function
+calls are typically of the form {\bf as.XXX(dataObject)}
+<<eval=FALSE, keep.source=TRUE>>=
+age=c(6, 6, 4)
+name=c('jack', 'zoe', 'stella')
+grade=c('k','k','pre-k')
+record=data.frame(age,name,grade)
+ageChar=as.character(age)
+recordMat=as.matrix(record)
+gradeFact=as.factor(grade)
+
+vec=1:10
+vecList=as.list(vec)
+unlist(vecList)
+@
+\end{frame}
+\begin{frame}[fragile]
+  \frametitle{Missing values}
+Dealing with missing values is a necessity in data analysis. It comes
+into play in 2 ways.
+<<eval=FALSE, keep.source=TRUE>>=
+name=c('jack', 'zoe','aiden', 'stella')
+testResult=c('pos','positive',' ','neg')
+testStatus=rep(NA,4)
+testStatus[testResult=='pos']=1
+testStatus[testResult=='positive']=1
+testStatus[testResult=='neg']=0
+@
+
+<<eval=FALSE, keep.source=TRUE>>=
+mean(testStatus)
+mean(testStatus,na.rm=T)
+@
+\end{frame}
+
+\begin{frame}[allowframebreaks]{Useful References}
+
+  \begin{multicols}{2}
+    \tiny{
+      \begin{thebibliography}{Tufte1983}
+      \bibitem[Tukey, 1977]{Tukey1977}
+        J.W.~Tukey
+        \newblock {\em Exploratory Data Analysis}
+        \newblock Addison-Wesley Publishing Co Inc, 1977.
+
+        \bibitem[Tufte, 1983]{Tufte1983}
+     E.R.~Tufte.
+     \newblock {\em The Visual Display of Quantitative Information}
+     \newblock Graphics Press, 1983.
+
+     \bibitem[Dalgaard, 2002]{Dalgaard2002}
+     P.~Dalgaard
+     \newblock {\em Introductory Statistics with \R{}}
+     \newblock Springer, 2002.
+
+     \bibitem[Chambers, 2008]{Chambers2008}
+         J.M.~Chambers
+         \newblock{\em Software for Data Analysis: Programming with \R{}}
+         \newblock Springer, 2008
+
+   \bibitem[Murrell, 2006]{Murrell2006}
+     P.~Murrell
+     \newblock {\em \R{} Graphics}
+     \newblock Chapman \& Hall/CRC, 2006.
+
+   \bibitem[Sarkar, 2008]{Sarkar2008}
+     D.~Sarkar
+     \newblock{\em Lattice: {M}ultivariate Data Visualization with \R{}}
+     \newblock Springer-Verlag, 2008.
+
+
+
+
+
+
+       \bibitem[Gentleman, 2009]{Gentleman2009}
+         R.~Gentleman
+         \newblock{\em \R{} Programming for Bioinformatics}
+         \newblock CRC Press, 2009.
+
+
+\end{thebibliography}
+}
+\end{multicols}
+
+\end{frame}
+\end{document}

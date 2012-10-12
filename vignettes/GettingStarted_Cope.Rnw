@@ -1,0 +1,419 @@
+\documentclass[ignorenonframetext,article,shortnames]{beamer}
+\usepackage{url}
+\usetheme{Boadilla}
+\mode<presentation>
+\usecolortheme{seahorse}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{Sweave}
+\usenavigationsymbolstemplate{}
+\RequirePackage{fancyvrb}
+\RequirePackage{listings}
+% %%% important: keep the following comment in
+% %%% (see https://mailman.stat.ethz.ch/pipermail/r-help/2009-July/204747.html)
+% this comment persuades Sweave not to insert \usepackage{Sweave}
+%
+% -------------------------------------------------------------------------------
+\SweaveOpts{keep.source=TRUE}
+% -------------------------------------------------------------------------------
+
+\title{Getting started with R}
+\author{Leslie Cope}
+\date{April 18, 2012}
+
+\begin{document}
+\begin{frame}
+\maketitle
+\end{frame}
+
+\begin{frame}{Jumping in}
+  \end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Using R as a calculator}
+ The syntax for basic arithmetic is pretty intuitive
+<<eval=FALSE, keep.source=TRUE>>=
+ 8+2
+ 8-2
+ 8*2
+ 8/2
+ 1/8
+ 8^2  # powers
+@
+Multiplication requires explicit use of the '*', write {\bf 3*(2+5)}
+rather than {\bf 3(2+5)}.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Using R as a calculator}
+  Once you have seen a few examples, you'll quickly get good at guessing the
+  names of common mathematical functions.
+<<eval=FALSE, keep.source=TRUE>>=
+sqrt(8)
+log(8)
+exp(log(8))
+log2(8) # log base 2
+log10(8)
+abs(-1)
+round(pi,2)
+cos(pi)
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Relations}
+  There are a number of ways to test for relationships between two
+  objects in R.  For example
+<<eval=FALSE, keep.source=TRUE>>=
+5>3
+@
+ returns the value, {\bf TRUE}, while
+<<eval=FALSE, keep.source=TRUE>>=
+5==3
+@
+the test for equality,  returns the value {\bf FALSE}. Other built-in relations
+ include {\bf <, >=, >=, !=}.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Syntax}
+All functions in R are called the same way - you type the name of the
+function, followed (without intervening spaces) by
+parentheses containing any arguments.
+<<eval=FALSE, keep.source=TRUE>>=
+log10(100)
+@
+In fact, 5*3 is just a convenient shorthand, all such functions can be
+called using parentheses!
+<<eval=FALSE, keep.source=TRUE>>=
+"*"(5,3)
+"+"(5,3)
+">"(5,3)
+@
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+  \frametitle{Defining variables in R}
+
+
+It is easy to define a variable and operate on it by name
+<<eval=FALSE, keep.source=TRUE>>=
+ x<-3
+ x=3  # does the same thing as <-
+ x*3
+ sqrt(x)
+@
+notice that since {\tt <-} is reserved for assigning a value to a variable
+name, you need to take care in using the less-than sign with
+negative numbers {\tt x<(-1)}.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Non-numeric variables}
+
+Nonnumeric variables are defined in the same way.
+<<eval=FALSE, keep.source=TRUE>>=
+x<-3
+class(x)
+ x<-"Male"  #character-type definitions should be enclosed in quotes.
+class(x)
+ x<-TRUE # 'T' or 'F' works too for logical values but 'true' does not
+class(x)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Data Structures}
+ So far we have only defined simple variables.  A vector (i.e. a list of
+values of the same general type) is a slightly more complicated data structure.
+<<eval=FALSE, keep.source=TRUE>>=
+ x<-c(7,3,12,1,8,3)# c for concatenate
+ y<-c("dog", "cat", "bird")
+ z<-1:5  # the \: indicates a range of numbers
+@
+\end{frame}
+\begin{frame}[fragile]
+  \frametitle{Most operations in R are "vectorized'' for efficiency}
+This means that can perform most arithmetic operations on an entire vector of numbers at once
+<<eval=FALSE, keep.source=TRUE>>=
+x<-c(7,3,12,1,8,3)
+ 3*x
+ sqrt(x)
+ 1/x
+@
+This includes relations
+<<eval=FALSE, keep.source=TRUE>>=
+ x>4
+@
+ returns a vector of TRUE/FALSE values obtained by comparing
+each element of x to the test case.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Pairs of vectors }
+
+Two vectors of the same length can be added, multipled and compared as
+well.
+<<eval=FALSE, keep.source=TRUE>>=
+ x=1:3
+ y=c(2,2,2)
+ x+y
+ x*y
+ x/y
+ x>y
+@
+\end{frame}
+\begin{frame}[fragile]
+  \frametitle{Functions specifically for vectors}
+  Some functions only make sense on vectors (or even more complicated data
+structures)
+<<eval=FALSE, keep.source=TRUE>>=
+ x<-c(7,3,12,1,8,3)
+ y<-c("dog", "cat", "bird")
+ length(x)# number of elements in x
+ sort(x)# numerical vectors are sorted in numerical order
+ sort(y)# character vectors are sorted in alphabetical order
+ max(x)
+ sum(x)# adds up all the values
+ prod(x)# multiples all the values
+ mean(x)# the average is sum(x)/length(x)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Subsetting Vectors - square bracket notation}
+Square brackets are used to indicate subvectors, both for extracting
+selected elements of a vector,
+<<eval=FALSE, keep.source=TRUE>>=
+x=1:5
+ x[1] # extracts first element of x
+ y[1]
+
+ x[c(1,3)]# extracts 1st and 3rd elements
+ x[1:3]# extracts 1st through 3rd elements
+@
+
+and for replacing selected elements of a vector
+<<eval=FALSE, keep.source=TRUE>>=
+ x
+ x[1]<-5
+ x[2:3]<-c(9,20)
+ x
+@
+\end{frame}
+
+\begin{frame}[fragile]
+ \frametitle{Square brackets}
+Like the "*" for multiplication, the square bracket notation is
+shorthand for a function.
+<<eval=FALSE, keep.source=TRUE>>=
+ x<-1:10
+"["(x,1)
+"["(x,1:3)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{More on subsetting}
+We can also name
+the elements of a vector and select elements by name
+<<eval=FALSE, keep.source=TRUE>>=
+ x<-1:10
+names(x)=letters[1:10]
+names(x)
+x[2]
+x['b']
+
+@
+where there are names, it is good practice to use names rather than
+indexes, that way the code works properly even if the data gets
+expanded or reordered later on.
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{More on subsetting}
+Pretty much any way you can think of to unambiguously indicate a
+subset of your data can be used inside the square brackets.
+<<eval=FALSE, keep.source=TRUE>>=
+age=c(35,47,24,32,51)
+sex=c('M','M','F','M','F')
+age[sex=="F"]
+@
+or
+<<eval=FALSE, keep.source=TRUE>>=
+age=c(35,47,24,32,51)
+seq(from=1,to=5,by=2)
+age[seq(from=1,to=5,by=2)]
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Getting Help}
+There is an extensive built in help system, which can be accessed from
+the tool bar or from the command line.
+Early on it may be easiest to open up the whole help system in .html
+format and look through the table of contents for your general
+topic.
+<<eval=FALSE, keep.source=TRUE>>=
+ help.start()
+@
+
+ When you know (or can guess) the function name you can look the
+ syntax up directly, by typing,
+for example,
+<<eval=FALSE, keep.source=TRUE>>=
+ help(sort)
+ ?sort
+@
+or
+<<eval=FALSE, keep.source=TRUE>>=
+ ?sort
+@
+You can also search help files for a key word using
+the command
+<<eval=FALSE, keep.source=TRUE>>=
+ help.search("sort")
+@
+Make sure the key word is enclosed in quotes.
+\end{frame}
+
+\begin{frame}
+\frametitle{The anatomy of the R help file}
+There are several sections to an R help file
+\begin{description}
+  \item[Description] briefly describes what the function does
+    \item[Usage] shows how the function is invoked, including all
+      standard arguments
+      \item[Arguments] list all inputs with a brief description of each
+        \item[Details] further details, if warrented
+          \item[Value] describes the output
+            \item[See Also] lists related functions that you might
+              have meant to look up instead
+              \item[Examples] can be cut and pasted into R to
+                demonstrate the function.
+    \end{description}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{How R works - Key definitions}
+\end{frame}
+
+\begin{frame}{Environments} The {\bf environment} is the basic
+  unit of organization inside of R.  It can be hard to give a crisp
+  definition, but think of it as a virtual container for a set of
+  variables.
+  \begin{itemize}
+    \item For example, every time R calls a function, like {\tt sort(x)}, it sets up a
+  temporary environment to represent what happens inside the
+  function.
+  \begin{itemize}
+    \item Your vector {\tt x} is passed into the function
+  environment and saved there. Conceptually, the
+  sorting takes place inside that container, and the answer is passed
+  back.
+  \item Once the operation is complete,  the temporary environment disappears.
+    \end{itemize}
+  \item Each package that you might load into R has its own
+    environment where the functions and datasets defined in that
+    package live.
+    \end{itemize}
+  \end{frame}
+
+   \begin{frame}[fragile]
+   \frametitle{Your workspace}  This is the environment you will be
+   most familiar with, home for all the variables you define.  By
+   design, you won't see much of the other environments unless
+   you go looking for them.
+   \begin{itemize}
+     \item Built in functions seem to work automatically, without
+       cluttering your work space.
+\item As we saw in the help files, half the functions in R define a
+  variable named {\bf x} in their internal environments. These copies
+  of {\bf x} in no way interfere with your own version of {\bf x}.
+\end{itemize}
+Important functions for managing your workspace include
+{\bf ls(), rm(), save.image()}.
+\end{frame}
+
+\begin{frame}{Lexical scope (Without technical details)}
+    Part of keeping things simple for the user means that:
+    \begin{itemize}
+ \item if you type
+{\tt abcde(1) }
+R looks for a function named {\tt abcde}
+   \item but if you type
+{\tt abcde[1] }
+R looks for a vector named {\tt abcde}
+\end{itemize}
+Lexical scope refers to the R's rules for managing its lexicon of
+built-in and user-defined variable names.
+\end{frame}
+
+   \begin{frame}[fragile]
+      \frametitle{Search path}
+      During an R session, you can see all the loaded package and workspace
+      environments. Because function environments only last while the
+      function is being executed, you won't see them.
+<<eval=FALSE, keep.source=TRUE>>=
+search()
+@
+\begin{itemize}
+\item Your workspace is listed in slot [1] as {\tt ".GlobalEnv"}.
+\item The order is important!  When you call a function, R
+goes looking through its environments {\it in order} for that name.
+So if you define your own function named {\bf plot} it will 'mask' the
+built in version that R stores further up in the search path.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Script Files}
+  Typing commands directly into the R console, as we have been doing
+  today, is a disaster as far as accuracy, reproducibility and
+  accountability are concerned, and very inefficient for all but the simplest
+  projects.
+  \begin{itemize}
+  \item R code for a project is generally organized into one or more script
+  files.
+  \item These are simple text files, but carry a {\bf .r} or {\bf .R}  suffix,
+    which R recognizes as  code file formats.
+    \item Script files are easily annotated with comments, when R
+      encounters
+      a $\#$ sign, it ignores the rest of the line, interpreting it as
+      a comment.
+      \item You can cut and paste code from your scripts into the R
+        console interactively or read in a whole file at once using
+        the {\bf source()} command.
+        \end{itemize}
+  \end{frame}
+\begin{frame}{Starting Directory}
+Unless you have just one, simple computing task to perform in your
+whole life, you will want to organize
+your work so that the data, code, and results for each project are
+bundled together.
+\begin{itemize}
+  \item its a good idea to settle early on a simple organizational
+    structure, so you can keep track of data files, code files, and results.
+    \item In addition to plots, and tables that you may have saved,
+        results would include the file containing the saved working directory for the
+      project.  By default, that file is called {\bf .RData}.
+      \item When opening an R session for a continuing project,
+        switch your starting directory to your main project folder to
+        automatically load up the project specfic {\bf .RData} file.
+        \end{itemize}
+        Important functions for managing your starting directory include
+{\bf getwd, setwd, list.files}.
+  \end{frame}
+
+
+
+
+\end{document}

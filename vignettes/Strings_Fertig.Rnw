@@ -1,0 +1,704 @@
+\documentclass{beamer}
+\usetheme{Warsaw}
+
+\usepackage{graphicx, color, url, verbatim}
+
+\AtBeginDocument{
+\DefineVerbatimEnvironment{Sinput}{Verbatim} {xleftmargin=0em,fontsize=
+\footnotesize}
+\DefineVerbatimEnvironment{Soutput}{Verbatim}{xleftmargin=0em,fontsize=
+\footnotesize}
+\DefineVerbatimEnvironment{Scode}{Verbatim}{xleftmargin=0em,fontsize=
+\footnotesize}
+}
+
+
+\title[String Processing]{Processing strings with R}
+\author[E. J. Fertig]{Elana J. Fertig \\ Johns Hopkins University \\ Department of Oncology, Division of Biostatistics and Bioinformatics}
+\date{Statistics and Data Analysis Using R \\ 11 May 2012}
+
+\setcounter{tocdepth}{1}
+
+\begin{document}
+
+\begin{frame}[plain]
+\titlepage
+\end{frame}
+
+\begin{frame}[plain]
+\frametitle{Lesson Overview: The why and how of string handling in R.}
+\begin{enumerate}
+\item Finding biologically relevant probes in gene annotation files.
+\item Extracting experimental conditions from strings of experiment names.
+\item Correcting naming discrepencies in manual annotations.
+\item Automating names for data output.
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Lesson prep}
+<<loadData, keep.source=TRUE,eval=TRUE>>=
+pkgdir <- system.file("extdata", package="IntroR")
+load(file.path(pkgdir, "StringHandlingSampleData.rda"))
+exprsData <- get("exprsData") ## RS: to avoid warnings with R's package checker
+HGU133Plus2 <- get("HGU133Plus2")
+@
+<<summarizeData>>=
+ls()
+@
+<<eval=F>>=
+summary(exprsData)
+HGU133Plus2[1,]
+@
+\end{frame}
+
+\section{Why is string handling in R important?}
+
+\begin{frame}
+\frametitle{Why should we extracting data by column/row/vector names?}
+\end{frame}
+
+\begin{frame}
+\frametitle{Why should we extracting data by column/row/vector names?}
+\begin{itemize}
+\item Can help avoid careless indexing errors: \url{http://www.biomedicalcomputationreview.org/7/2/9.pdf}.
+\item Makes scripts more readable and easier to debug.
+\item Simplifies extraction of subsets of data with common features (e.g., the same gene family, experimental conditions).
+\item Facilitates accurately matching of samples/genes to their annotation files.
+\item Guarantees that all relevant datapoints are found from large sets.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Finding the gene symbols of the first five probes in the array}
+<<hgu133Plus2>>=
+HGU133Plus2[row.names(exprsData)[1:5],"Gene.Symbol"]
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Extracting all WT samples by name}
+<<label=colnamesExtr, keep.source=T>>=
+WTData <- exprsData[,c('HGU133Plus2_20081116_WT_1.CEL',
+                       'HGU133Plus2-20081117-WT-2.CEL',
+                       'HGU133Plus2-20081118-WT-3.CEL')]
+summary(WTData)
+@
+\end{frame}
+
+\section{grep}
+
+\subsection{grep vs ==}
+
+\begin{frame}[fragile]
+\frametitle{The gene annotation file}
+<<>>=
+HGU133Plus2[row.names(exprsData)[1:5],"Gene.Symbol"]
+HGU133Plus2[1,]
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{How could the gene annotation file be used to subset the dataset in biologically relevant ways?}
+\end{frame}
+
+\begin{frame}
+\frametitle{How could the gene annotation file be used to subset the dataset in biologically relevant ways?}
+\begin{itemize}
+\item Extracting probe names that measure expression in a gene or gene family.
+\item Finding the probes associated with a pathway of interest.
+\item \textit{Determining biological information about probes that we infer are differentially expressed.}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Extracting probes associated with one gene}
+\par How could we use the ``=='' operator to extract all the probes that measure expression of NOTCH1?
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Extracting probes associated with NOTCH1}
+<<>>=
+row.names(HGU133Plus2)[HGU133Plus2[,'Gene.Symbol']=='NOTCH1']
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Extracting probes associated with multiple genes}
+\par What are the challenges with using the ``=='' operator to extract all the probes that measure expression of any genes in the Notch family (i.e., NOTCH1, NOTCH2, etc.)?
+\end{frame}
+
+\begin{frame}
+\frametitle{Extracting probes associated with multiple genes}
+\par What are the challenges with using the ``=='' operator to extract all the probes that measure expression of any genes in the Notch family (i.e., NOTCH1, NOTCH2, etc.)?
+
+\begin{itemize}
+\item Ugly loop structure.
+\item Need to know \textit{a priori} the names of all the Notch family genes.
+\end{itemize}
+
+\par \textbf{SOLUTION:} the ``grep'' command.
+\end{frame}
+
+\subsection{Basic usage}
+
+\begin{frame}[fragile]
+\frametitle{Using the ``grep'' command to find the all of the probes associated with Notch family genes}
+\par Getting the indices of the Notch family genes \textbf{in the annotation file}
+<<>>=
+grep('NOTCH', HGU133Plus2[,'Gene.Symbol'])
+@
+\par Getting the probe names
+<<>>=
+row.names(HGU133Plus2)[grep('NOTCH', HGU133Plus2[,'Gene.Symbol'])]
+@
+\end{frame}
+
+
+\subsection{value option}
+
+\begin{frame}[fragile]
+\frametitle{But how do I know if grep worked?}
+\par Validating within the annotation file.
+<<>>=
+NotchProbes <- row.names(HGU133Plus2)[grep('NOTCH', HGU133Plus2[,'Gene.Symbol'])]
+HGU133Plus2[NotchProbes,'Gene.Symbol']
+@
+\par Using the ``value=T'' option of ``grep''
+<<>>=
+grep('NOTCH', HGU133Plus2[,'Gene.Symbol'], value=T)
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{What are other uses of the ``value=T'' option of ``grep''?}
+\end{frame}
+
+\begin{frame}
+\frametitle{What are other uses of the ``value=T'' option of ``grep''?}
+\begin{itemize}
+\item Determine all the names of the Notch family genes represented on the array.
+\item Extract sets of strings with common properties.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Extract sets of strings with common properties.}
+\par E.g., finding all of the ``Notch'' experiments in our simulated dataset.
+<<>>=
+colnames(exprsData)
+grep('Notch', colnames(exprsData), value=T)
+@
+\end{frame}
+
+\subsection{ignore.case option}
+
+\begin{frame}[fragile]
+\frametitle{``grep'' is case-sensitive}
+<<>>=
+grep('NOTCH', colnames(exprsData), value=T)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{``grep'' is case-sensitive \textbf{unless you specify the option ``ignore.case=T''}}
+<<>>=
+grep('NOTCH', colnames(exprsData), value=T, ignore.case=T)
+@
+\end{frame}
+
+\subsection{Controlling multiple matches}
+
+\begin{frame}[fragile]
+\frametitle{Extracting probes associated with only NOTCH3 and NOTCH4}
+<<>>=
+grep('NOTCH',HGU133Plus2[,'Gene.Symbol'],value=T)
+@
+<<>>=
+grep('NOTCH[34]',HGU133Plus2[,'Gene.Symbol'],value=T)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Extracting only NOTCH1, NOTCH2, NOTCH3, NOTCH4}
+<<>>=
+setdiff(grep('NOTCH',HGU133Plus2[,'Gene.Symbol'],value=T),
+  grep('NOTCH[1-4][A-Z]',HGU133Plus2[,'Gene.Symbol'],value=T))
+@
+\end{frame}
+
+\subsection{Special characters}
+
+\begin{frame}[fragile]
+\frametitle{grep: finding special characters}
+\par Because they have special meanings, grep will not be able to find any of the following characters:
+\begin{center}
+\par . $\backslash$ | ( ) [ \{ \^{} \$ * + ?
+\end{center}
+<<eval=F>>=
+x <- c('a.b','a\b','a|b','a(b','a)b','a[b','a{b','a^b','a$b','a*b','a+b','a?b')
+grep('a.b',x,value=T)
+grep('a$b',x,value=T)
+grep('a[b',x,value=T)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{grep: finding special characters}
+\par Because they have special meanings, grep will not be able to find any of the following characters:
+\begin{center}
+\par . $\backslash$ | ( ) [ \{ \^{} \$ * + ?
+\end{center}
+\par \textbf{SOLUTION:} Add $\backslash\backslash$ to the start of each of these characters
+<<>>=
+x <- c('a.b','a\b','a|b','a(b','a)b','a[b','a{b','a^b','a$b','a*b','a+b','a?b')
+grep('a\\.b',x,value=T)
+grep('a\\$b',x,value=T)
+grep('a\\[b',x,value=T)
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Questions on grep?}
+\par Additional information available from ?grep and ?regex in the R help menu.
+\end{frame}
+
+\begin{frame}
+\frametitle{Exercises on grep}
+\begin{enumerate}
+\item Use a single ``grep'' command to find all of the probes measuring the genes HRAS, NRAS, and KRAS.
+\item Find the probes which are annotated to the Notch signaling pathway in GO.  \textit{Hint: pathway information is available in the column ``Gene.Ontology.Biological.Process'' of HGU133Plus2.}
+\item Find the probes which are annotated to genes in the third sub-band of any chromosome.  \textit{Hints: Cromosomal locations are available in the column ``Chromosomal.Location'' of HGU133Plus2.  Be careful to check your results using the ``value=T'' option of ``grep''.}
+\end{enumerate}
+\end{frame}
+
+\section{Changing string content}
+
+\begin{frame}[fragile]
+\frametitle{Errors in manual entries}
+\par Learning what you have learned about grep, what may be difficult about automatically processing the sample names in our dataset?
+<<>>=
+colnames(exprsData)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Errors in manual entries}
+\par Learning what you have learned about grep, what may be difficult about automatically processing the sample names in our dataset? \textbf{Accounting for the different structure in their names.}
+<<>>=
+colnames(exprsData)
+@
+\end{frame}
+
+\subsection{sub}
+\begin{frame}[fragile]
+\frametitle{Replacing a character}
+\par The ``sub'' command allows you to easily replace pieces of a string.
+<<>>=
+sub('are','R', 'Strings are fun')
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{The ``sub'' command}
+\begin{itemize}
+\item sub(pattern, replacement, y) will replace the first instance of the pattern 'pattern' with 'replacement' in string y.
+\item 'pattern' must be of the same format as a search pattern for the ``grep'' function.
+\item The ``ignore.case'' option works for ``sub'' (but will not change the case of 'replacement')
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Standardizing the column names of the expression file}
+\par sub(pattern, replacement, y) will replace the first instance of the pattern 'pattern' with 'replacement' in string y.
+<<>>=
+colnames(exprsData)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Standardizing the column names of the expression file with sub}
+\par sub(pattern, replacement, y) will replace the first instance of the pattern 'pattern' with 'replacement' in string y.
+\par What is wrong with the following command?
+<<eval=F>>=
+sub('_','-',colnames(exprsData))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Standardizing the column names of the expression file with sub}
+\par sub(pattern, replacement, y) will replace the \textbf{first instance} of the pattern 'pattern' with 'replacement' in string y.
+\par What is wrong with the following command? \textbf{Incomplete replacement.}
+<<eval=T>>=
+sub('_','-',colnames(exprsData))
+@
+\par \textbf{Solution: }
+<<eval=T>>=
+sub('_','-',sub('_','-',sub('_','-',colnames(exprsData))))
+@
+\end{frame}
+
+\subsection{gsub}
+\begin{frame}[fragile]
+\frametitle{sub vs gsub}
+\par sub(pattern, replacement, y) will replace the \textbf{first instance} of the pattern 'pattern' with 'replacement' in string y.
+\par gsub(pattern, replacement, y) will replace the \textbf{every instance} of the pattern 'pattern' with 'replacement' in string y.
+<<eval=T>>=
+sub('_','-',sub('_','-',sub('_','-',colnames(exprsData))))
+@
+<<eval=T>>=
+gsub('_','-',colnames(exprsData))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Fixing the sample names of our array data}
+<<>>=
+colnames(exprsData) <- gsub('_','-',colnames(exprsData))
+@
+\par Why should someone be VERY careful about using a command like this one?
+\end{frame}
+
+\subsection{String case}
+\begin{frame}[fragile]
+\frametitle{Changing string cases}
+\begin{itemize}
+\item ``toupper'' will change all of the string to uppercase
+\item ``tolower'' will change all of the string to lowercase
+\end{itemize}
+<<>>=
+x <- c('abc1','aBC1','ABC1')
+tolower(x)
+toupper(x)
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Questions on changing string content?}
+\end{frame}
+
+\begin{frame}
+\frametitle{Exercises}
+\begin{enumerate}
+\item The array data is actually stored in files labeled ``.Cel'' instead of ``.CEL''  Fix this error in the file names.
+\item The shRNA vector was switched and both the Notch1 and Notch2 knock-outs were actually Notch3 knock-outs.  Come up with new file names to reflect this change.  Can you do this with a single ``sub'' command using what we learned about multiple matching for ``grep''?
+\item Use the ``sub'' command to find only the dates for the files.  \textit{Hint: the replacement string can be ``'' for no text.}
+\end{enumerate}
+\end{frame}
+
+\section{Parsing information from strings.}
+
+\begin{frame}[fragile]
+\frametitle{How to obtain content from strings?}
+\par The file names of expression data may often contain information about the platform, processing date, experimental condition, and replicate (as in the column names of our simulated data).
+<<>>=
+WTString <- colnames(exprsData)[1]
+WTString
+@
+\par How can we use the ``sub'' command to determine the experimental condition of this sample from the WTString?
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Using the ``sub'' command to determine the processing date of this sample.}
+<<>>=
+WTString
+sub('-WT-1\\.CEL','',sub('HGU133Plus2-','',WTString))
+@
+\par What about this seems suboptimal?
+\end{frame}
+
+\subsection{substr}
+
+\begin{frame}[fragile]
+\frametitle{``sub'' vs ``substr''}
+\begin{itemize}
+\item ``sub'' can select information from the string with search strings.
+\item ``substr'' can select information from the string based on its indices.
+\end{itemize}
+<<>>=
+WTString
+sub('-WT-1\\.CEL','',sub('HGU133Plus2-','',WTString))
+substr(WTString,13,20)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\textbf{It is easier to process multiple strings of similar format with ``substr'' than ``sub''}
+<<>>=
+substr(colnames(exprsData),13,20)
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Pros and cons of ``substr''?}
+\end{frame}
+
+\begin{frame}
+\frametitle{Pros and cons of ``substr''}
+\begin{columns}[t]
+\column{0.5\textwidth}
+\textbf{Pros}
+\begin{enumerate}
+\item Easy to process multiple strings in a batch.
+\item Can find information when it's in the same place.
+\end{enumerate}
+\column{0.5\textwidth}
+\textbf{Cons}
+\begin{enumerate}
+\item Need to know exact index numbers of the string that you're looking for.
+\item Cannot account for information of different lengths in different strings in the vector (e.g., Notch sample names vs WT sample names).
+\item Can only obtain a single piece of information at a time.
+\end{enumerate}
+\end{columns}
+\end{frame}
+
+\subsection{strsplit}
+\begin{frame}[fragile]
+\frametitle{``substr'' vs ``strsplit''}
+\begin{itemize}
+\item ``substr'' can select information from the string based on its indices.
+\item ``strsplit'' can select information separated by a common character or set of characters.
+
+<<>>=
+WTString
+substr(colnames(exprsData),13,20)
+strsplit(colnames(exprsData), split='-')
+@
+
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{What are the advantages of strsplit?}
+\end{frame}
+
+\begin{frame}
+\frametitle{Advantages of strsplit}
+\begin{itemize}
+\item The only formatting that needs to be stable across multiple strings is the string used to separate pieces of information.
+\item Can separate by multiple strings, using similar inputs as for ``grep''
+\item Can separate into as many piecies as are necessary in each string (hence the list format).
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Separating by multiple delimiters}
+<<>>=
+strsplit(colnames(exprsData), split='[-\\.]')
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Using ``strsplit'' to create a sample annotation matrix}
+<<keep.source=T>>=
+sampleAnnot <- t(data.frame(strsplit(colnames(exprsData),
+  split='[-\\.]')))
+colnames(sampleAnnot) <- c('platform','date','experiment',
+  'replicate','file')
+row.names(sampleAnnot) <- colnames(exprsData)
+sampleAnnot
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{An example with variable outputs}
+\par Find all of the genes associated with the probes in the Affymetrix annotation file.
+<<keep.source=T>>=
+probes2Genes <- strsplit(HGU133Plus2[,'Gene.Symbol'],split=' /// ')
+names(probes2Genes) <- row.names(HGU133Plus2)
+@
+\par Each probe can be mapped to multiple genes, which is why it's best for strsplit to return a list.
+<<>>=
+unique(sapply(probes2Genes,length))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Selecting from ``strsplit'' output with variable lengths}
+\par Find the first gene measured by each probe in the Affymetrix annotation file.
+<<keep.source=T>>=
+firstGenes <- sapply(probes2Genes,function(x){x[[1]]})
+firstGenes[1:100]
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Special split characters}
+\begin{itemize}
+\item '$\backslash$t tab space
+\item '$\backslash$n' new line
+\item ' +' white space
+\end{itemize}
+\par Some of these may look familiar from read.table
+\end{frame}
+
+\begin{frame}
+\frametitle{Questions?}
+\end{frame}
+
+\begin{frame}
+\frametitle{Exercises}
+\begin{enumerate}
+\item Use a single application of the ``strsplit'' function to extract the data frame describing array samples on the original, uncorrected sample names.
+\item Use the ``strsplit'', ``sapply'', and ``grep'' commands to find all of the probes annotated to more than one gene.
+\item Find the second gene annotated to each of the probes that are regulated by more than one gene.
+\end{enumerate}
+\end{frame}
+
+\section{Outtting strings automatically}
+
+\begin{frame}
+\frametitle{Why might we want to control the output of strings?}
+\end{frame}
+
+\begin{frame}
+\frametitle{Why might we want to control the output of strings?}
+\begin{itemize}
+\item Creating standardized file names for samples.
+\item Creating standardized file names for plots of multiple genes.
+\item Linking gene names to the results of statistical tests.
+\end{itemize}
+\end{frame}
+
+\subsection{paste}
+
+\begin{frame}[fragile]
+\frametitle{The ``paste'' command combines multiple strings into a single string}
+<<>>=
+paste('aA','bB','c','d',sep='.')
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Special characters and paste}
+\par The ``sep'' option can be any string, including the special strings we learned about in the ``strsplit'' section.
+<<>>=
+# separate by tab
+x1 <- paste('a','b','c',sep='\t')
+cat(x1)
+cat('\n')
+
+# separate by new line
+x2 <- paste('a','b','c',sep='\n')
+cat(x2)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{The ``paste'' command with the ``sep'' option will paste togeter elements from multiple vectors}
+<<>>=
+x <- c('a','b','c','d')
+y <- 1:5
+paste(x,y,sep='.')
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Combining names with data}
+<<>>=
+paste('The expression of probe',
+  row.names(exprsData)[1],
+  'in the',
+  sampleAnnot[,'experiment'],
+  'sample number',
+  sampleAnnot[,'replicate'],
+  'is',
+  round(exprsData[1,],2),
+  sep=' ')
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{The ``paste'' command with the ``sep'' option CANNOT combine elements from a single vector}
+<<>>=
+x <- c('a','b','c','d')
+paste(x,sep='.')
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{The ``paste'' command with the ``collapse'' option will paste together elements from a single vector}
+<<>>=
+x <- c('a','b','c','d')
+paste(x,collapse=', ')
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Re-creating the sample file names}
+\par The first file
+<<>>=
+paste(sampleAnnot[1,],collapse='.')
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Re-creating the sample file names}
+\par The first file
+<<>>=
+paste(sampleAnnot[1,],collapse='.')
+@
+\par All files
+<<>>=
+apply(sampleAnnot,1,function(x){paste(x,collapse='.')})
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Questions?}
+\par Read about the ``sprintf'' function (?sprintf) for additional methods to format strings for output.
+\end{frame}
+
+\begin{frame}
+\frametitle{Exercises}
+\begin{enumerate}
+\item You wish to make a scatterplot comparing the expression in all pairs of the first three probes in the dataset.  Use ``paste'' to create both the titles and file names of those plots.
+\item Use both ``grep'' and paste to create a string that outputs the expression in all of the WT samples in a neat format for the first probe.
+\end{enumerate}
+\end{frame}
+
+\section{Simulated data for this lesson}
+
+\begin{frame}[fragile]
+\frametitle{Reading the Affymetrix annotation}
+<<label=createSimData, keep.source=T,eval=F>>=
+# read annotation file from affymetrix
+read.table('HG-U133_Plus_2.na32.annot.csv',
+           header=T, row.names=1,sep=",",
+           stringsAsFactors = FALSE) ->HGU133Plus2
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Defining the sample attributes}
+<<label=defineSamples, keep.source=T,eval=F>>=
+# defining the sample names
+sampleNames <- paste(paste(rep('HGU133Plus2', 9),
+                     rep(c('20081116', '20081117', '20081118'),
+                         each=3),
+                     rep(c('WT','Notch1','Notch2'), 3),
+                     rep(1:3,each=3),sep="-"),'CEL',sep='.')
+
+# representing a standardized name change in the microarray core
+sampleNames[1:3] <- gsub('-','_',sampleNames[1:3])
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Creating the simulated data}
+<<label=SimDataCont,eval=F, keep.source=T,eval=F>>=
+# fix the random number generator for reproducibility
+set.seed(23408123)
+# creating the sample data
+exprsData <- matrix(rexp(nrow(HGU133Plus2)*length(sampleNames),
+                         rate=1/10), nrow=nrow(HGU133Plus2))
+row.names(exprsData) <- sample(row.names(HGU133Plus2),
+                               nrow(HGU133Plus2))
+colnames(exprsData) <- sampleNames
+save(list=c('HGU133Plus2','exprsData'),
+  file='StringHandlingSampleData.Rda')
+@
+\end{frame}
+
+
+\end{document}

@@ -1,0 +1,772 @@
+\documentclass[ignorenonframetext,article]{beamer}
+\usetheme{Boadilla}
+\mode<presentation>
+\usecolortheme{seahorse}
+\usenavigationsymbolstemplate{}
+\usepackage{color}
+\usepackage{url}
+\newcommand{\R}{\textsf{R}}
+
+\title[\R{} functions]{Writing \R{} functions}
+\institute[~]{\texttt{website}: \url{http://genomics.jhu.edu/modules/genRmod002.html}\\
+\medskip
+\texttt{rscharpf@jhsph.edu}}
+\author{Rob Scharpf}
+%% I put the course number in the brackets
+%\date[340.664]{Sept 29, 2011}
+%\date{Sept 29, 2011}
+\date{\today}
+
+\begin{document}
+
+<<opts,eval=FALSE,echo=FALSE>>=
+options(width=50)
+@
+
+\frame{\titlepage}
+
+\begin{frame}
+  \frametitle{Outline}
+  \begin{itemize}
+    \item Course project
+    \item Review of last week
+    \item importance of a clean workspace
+      %% accidental bugs / code more readable (hide some of the
+      %% implementation details)
+    \item anatomy of a \R{} function
+      \begin{itemize}
+      \item lexical scope / environments
+      \item input / output
+      \end{itemize}
+    \item anticipating problems
+    \item debugging
+    \end{itemize}
+  \end{frame}
+
+\begin{frame}
+  \frametitle{Course Project}
+Details are posted on the course website:
+
+\url{http://genomics.jhu.edu/modules/Rmodules/genRmod9/classProject.html}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Review of last week}
+
+  Last week we covered
+
+  \begin{itemize}
+  \item \R{}'s control structures (\verb+if+, \verb+while+,
+    \verb+for+), as well as functions such as \verb+apply+,
+    \verb+sapply+, and \verb+lapply+ that facilitate the iterative
+    application of a function to lists or arrays.
+
+  \item We also used performed basic character string manipulation with
+  \verb+gsub+, \verb+grep+, etc.
+
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Mean petal lengths (Review)}
+  Exercise: Use \verb+for+-loops and \verb+if+-then's to calculate the average
+  \texttt{Petal.Length} of \texttt{setosa} irises:
+
+<<iris>>=
+data(iris)
+str(iris)
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Solution 1}
+
+  Logic:
+\begin{itemize}
+
+\item Iterate through each row of the \texttt{iris} data.frame and
+  check whether the flower is of Species setosa using
+  \verb+if (expression)+.
+
+\item If \verb+expression+ evaluates to \verb+TRUE+, add the petal
+  length for this flower to a variable called \verb+petalSum+.
+
+\item We will use \verb+petalSum+ to keep a running tally of the total
+  petal lengths for all setosa flowers, and \verb+setosaCount+ need to
+  keep a tally of the number of setosa flowers
+\end{itemize}
+
+<<initializeVars>>=
+setosaCount <- petalSum <- 0
+nr <- nrow(iris)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Solution 1}
+\begin{itemize}
+
+%\item we will iterate through the rows of the iris data.frame using
+%  the \verb+for+ control structure.
+
+\item To evaluate each row of iris, we will need to create an integer
+  vector ($1, 2, ..., nr$) that will index each row of the iris
+  data.frame.
+
+\vspace{1em}
+  There are several ways to do this, but \verb+seq_len+ is probably
+  the safest:
+\end{itemize}
+
+<<remark>>=
+## safe way to create an integer vector 1, 2, ..., nr
+I <- seq_len(nr)
+## The following may not work as expected
+## if the matrix had zero rows:
+for(i in 1:0) cat(i)
+## Using seq_len ensures the for loop is skipped
+## for a matrix with zero rows
+for(i in seq_len(0)) cat(i)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Solution 1}
+  \begin{itemize}
+
+  \item  we use the \verb+for+ control structure to iterate through
+    the rows of the iris data.frame:
+
+  \end{itemize}
+<<petals>>=
+for(i in seq_len(nr)){
+	cat(".") ## prints a dot for each iteration
+	if(iris$Species[i]=="setosa"){
+		setosaCount <- setosaCount+1
+		petalSum <- petalSum+iris$Petal.Length[i]
+	}else{ ## could be omitted
+		setosaCount <- setosaCount+0
+		petalSum <- petalSum+0
+	}
+}
+(petal.mean <- petalSum/setosaCount)
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Solution 2}
+
+Recognize that  \verb+==+ is vectorized.  E.g.,
+
+<<isSetosa>>=
+species <- iris$Species
+is.setosa <- species == "setosa"
+summary(is.setosa)
+@
+
+Recall logical vectors can be used for subsetting:
+
+<<logicalVectors>>=
+x <- 1:2
+x[c(FALSE, TRUE)]
+@
+
+Therefore, to extract the petal lengths
+
+<<petalMeans2>>=
+petal.lengths <- iris$Petal.Length
+setosa.lengths <- petal.lengths[is.setosa]
+mean(setosa.lengths)
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Exercise}
+
+  Exercise: Calculate the mean petal lengths for each of the 3
+  species. \\
+
+  \vspace{1em} Note that problems such as these can be efficiently
+  solved by
+
+  \begin{itemize}
+  \item creating a list where each element in the list is a vector of
+    petal lengths for one species
+    \begin{itemize}
+    \item We have flower 3 species, so we want to construct a list of length 3.
+    \item More generally, we often want to \verb+split+ a numeric
+      vector $x$ by a factor $y$, where $x$ and $y$ are two vectors of
+      the same length.
+    \end{itemize}
+  \item Recognize that we can use \verb+lapply+ or \verb+sapply+ to
+    apply a function to each element in the list.
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\texttt{split}}
+  {\small
+\begin{verbatim}
+split                   package:base                   R Documentation
+
+Divide into Groups and Reassemble
+
+Description:
+
+     'split' divides the data in the vector 'x' into the groups defined
+     by 'f'.  The replacement forms replace values corresponding to
+     such a division.  'unsplit' reverses the effect of 'split'.
+
+Usage:
+
+     split(x, f, drop = FALSE, ...)
+     split(x, f, drop = FALSE, ...) <- value
+     unsplit(value, f, drop = FALSE)
+
+Arguments:
+
+       x: vector or data frame containing values to be divided into
+          groups.
+
+       f: a 'factor' in the sense that 'as.factor(f)' defines the
+          grouping, or a list of such factors in which case their
+          interaction is used for the grouping.
+
+\end{verbatim}
+    }
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Construct a list of petal lengths split by the factor Species}
+<<split>>=
+listOfPetalLengths <- split(petal.lengths, species)
+str(listOfPetalLengths)
+@
+Finally, we can \emph{apply} the function \verb+mean+ to each element
+in the list using the \verb+lapply+ function:
+<<lapply>>=
+lapply(X=listOfPetalLengths, FUN=mean)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{What if  \texttt{NA}'s were present in the petal lengths}
+
+<<NAinlist>>=
+listOfPetalLengths[[1]][5] <- NA
+lapply(X=listOfPetalLengths, FUN=mean)
+@
+How can we ignore missing values in order to estimate the mean of the
+non-missing petal lengths?
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Ignoring \texttt{NA}'s}
+Extracted from the \texttt{lapply} help file:
+{\small
+  \begin{verbatim}
+
+Arguments:
+
+       X: a vector (atomic or list) or an 'expression' object.  Other
+          objects (including classed objects) will be coerced by
+          'base::as.list'.
+
+     FUN: the function to be applied to each element of 'X': see
+          'Details'.  In the case of functions like '+', '%*%', the
+          function name must be backquoted or quoted.
+
+     ...: optional arguments to 'FUN'.
+
+\end{verbatim}
+}
+
+
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Understanding \ldots}
+
+  \begin{itemize}
+
+  \item The formal arguments of \texttt{lapply} and \texttt{sapply}
+    are \texttt{X, FUN}, and \texttt{...}.
+
+  \item Any named argument that is not one of the formal arguments
+    will be passed to \texttt{FUN} through the ``...'' operator
+
+  \item In our example, \texttt{FUN=mean}. Any formal argument of the
+    function \texttt{mean} can be passed from \texttt{lapply} or
+    \texttt{sapply} to \texttt{mean} through the special ``...''
+    operator.
+
+  \item Recall that \texttt{na.rm} is a formal argument of the
+    function \texttt{mean}, and can therefore be passed through the
+    ``...'' mechanism
+  \end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Ignoring \texttt{NA}'s}
+
+<<lapply3>>=
+sapply(X=listOfPetalLengths, FUN=mean)
+## Note, the formal arguments for mean must be named
+sapply(listOfPetalLengths, mean, na.rm=TRUE)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Ignoring \texttt{NA}'s}
+
+  \begin{itemize}
+
+  \item Any formal argument of \verb+FUN+ can be passed through the
+    ``...'' operator in \texttt{sapply}:
+
+  \item We can apply other functions to summarize the petal lengths,
+    such as the standard deviation
+
+  \item Note that \texttt{na.rm} is also a formal argument of the
+    function \texttt{sd}
+  \end{itemize}
+
+<<sapply>>=
+sapply(X=listOfPetalLengths, FUN=sd, na.rm=TRUE)
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Writing functions: objectives}
+
+  \begin{itemize}
+  \item we will write well-defined functions to perform a specific
+    tasks
+
+  \item these functions will make your 'workspace' less cluttered
+
+  \item by hiding details of implementation in a function, your code
+    will be more readable
+
+  \end{itemize}
+
+  To begin, create a file called ``functions.R'' in your local working
+  directory.  Check that the file exists:
+
+%<<fileexists>>=
+%file.exists("functions.R")
+%@
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The sample standard deviation}
+
+  Denote the sample standard deviation by
+
+  \begin{eqnarray*}
+    s &=& \sqrt{\frac{1}{n-1}\sum_{i=1}^n (x_i - {\bar x})^2}
+  \end{eqnarray*}
+
+  \verb+sd+ is a function in \R{}, but we illustrate how one could
+  calculate $s$ by hand:
+
+<<stdDeviation>>=
+x <- rnorm(10, 0, 3)
+xbar <- mean(x)
+sumsOfSquares.x <- sum((x - xbar)^2)
+df <- length(x)-1
+std.dev <- sqrt(sumsOfSquares.x/df)
+## compare to R's sd function
+all.equal(std.dev, sd(x))
+@
+
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The sample standard deviation}
+For another variable $y$, we have
+<<stdy>>=
+y <- rnorm(15)
+ybar <- mean(y)
+sumsOfSquares.y <- sum((y-ybar)^2)
+df <- length(y)-1
+std.dev.y <- sqrt(sumsOfSquares.y/df)
+round(std.dev.y, 2)
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The sample standard deviation}
+Note, the standard deviation of $x$ can no longer be computed by
+
+<<sdx2>>=
+std.dev.x <- sqrt(sumsOfSquares.x/df)
+all.equal(std.dev, std.dev.x) ## NOT THE SAME
+## Reason: 'df' has changed
+df.x <- length(x)-1
+std.dev.x <- sqrt(sumsOfSquares.x/df.x)
+all.equal(std.dev, std.dev.x) ## TRUE
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Cluttered workspace}
+
+  \begin{itemize}
+  \item A cluttered workspace can lead to errors as objects are
+    inadvertently renamed, etc.
+
+  \item The symbols (objects) in the local environment can be listed
+    using the \verb+ls+ function:
+
+<<ls>>=
+ls()[1:5]
+@
+
+\item Avoid storing temporary data in the work space (e.g.,
+  \verb+sumsOfSquares, df, df.x+)
+
+  \end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+  \frametitle{Cluttered workspace}
+
+  \begin{itemize}
+  \item The source code is more difficult to read when implementation
+    details are exposed
+
+  \item By writing \R{} functions
+    \begin{itemize}
+
+    \item objects created in the function's local environment will
+      disappear after the function is evaluated
+
+    \item details of the implementation are only exposed by inspecting
+      the function. %Code is immediately more readable and easier to
+%      debug.
+
+    \item well defined functions that perform a specific task can be
+      reused and are easier to debug
+
+    \item {\color{blue}{ Code is more trustworthy}}
+
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+  \frametitle{Anatomy of a function}
+
+  $\mbox{function}( ~formal~ arguments~ ) ~~body$\\
+  \vspace{1em}
+  For multi-line functions, the braces \{ and \} are needed to open
+  and close the body. E.g.,
+
+<<foo>>=
+foo <- function() ## arguments (if any)
+{ ## begin body of function
+	round(x + y, 2)
+}  ## end body of function
+x <- y <- rnorm(10)
+foo() ## works
+@
+
+\end{frame}
+
+%\begin{frame}[fragile]
+%<<foo2>>=
+%foo <- function(){
+%	x + y
+%}
+%x <- y[1:10]
+%foo() ## works
+%@
+%\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Lexical scope}
+
+\begin{itemize}
+
+\item When evaluating $x+y$ in \verb+foo+, \R{} looks first in the
+  environment of the function \verb+foo+.
+
+\item As $x$ and $y$ were not defined in \verb+foo+, \R{} next
+  searches the parent environment of the calling function.
+
+\item Here, the parent environment is the global environment (your
+  workspace).  Since $x$ and $y$ were found in the global environment,
+  the function \emph{worked} without returning an error.
+
+\item If we remove either $x$ or $y$ from the global environment,
+  \verb+foo+ will no longer execute
+
+\end{itemize}
+<<foo>>=
+rm(x)
+tryCatch(foo(),error=function(e) "failed")
+@
+
+
+\end{frame}
+
+
+% A simple R function
+\begin{frame}[fragile]
+  \frametitle{A simple \R{} function}
+
+<<sd2>>=
+rm(list=ls()) ## clean our workspace
+ls()
+sd2 <- function(x){  ## a function with a single argument
+	sumsOfSquares <- sum((x-mean(x))^2)
+	df <- length(x)-1
+	result <- sqrt(sumsOfSquares/df)
+	return(result)
+}
+x <- rnorm(10)
+sd2(x)
+ls()
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Exercise}
+\begin{itemize}
+  \item Cut and paste the function \verb+sd2+ to the file functions.R
+
+  \item Next,
+
+<<source, eval=FALSE>>=
+rm(sd2)
+exists("sd2")
+source("functions.R")
+exists("sd2")
+@
+
+\end{itemize}
+
+\end{frame}
+
+<<evaluateSd2>>=
+x <- rnorm(10)
+sd2(x)
+@
+
+
+\begin{frame}
+  \frametitle{Anticipating problems}
+
+  \begin{itemize}
+
+  \item handling \texttt{NA}'s
+
+  \item non-numeric data passed
+
+  \item matrix passed instead of a vector
+
+  \end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Handling NA's}
+
+<<NAs>>=
+x <- rnorm(10)
+x[5] <- NA
+sd2(x)
+@
+
+Note that the default behavior of R's function \verb+sd+ also returns
+\Sexpr{NA}.
+<<Rsd>>=
+sd(x)
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Exercise}
+
+  Write a function called 'sdMatrix' that is a wrapper for \R{}'s
+  \verb+sd+ function that calculates the row- or column-wise standard
+  deviations of a matrix.
+  \vspace{1em}
+
+  Require the following:
+
+    \begin{itemize}
+
+    \item that argument 'x' is a numeric matrix. If not, stop
+      execution and print a message. See \verb+stop+.
+
+    \item Ignore \verb+NA+ values by default.  If \verb+NA+'s are
+      present, use the function \verb+warning+ to print a statement
+      that missing values were ignored.
+
+    \item Add an argument called \texttt{MAR} indicating whether the
+      row (\texttt{MAR=1}) or column (\texttt{MAR=2}) standard
+      deviations are to be calculated.  Print a message (see
+      \texttt{message}) indicating whether you are calculating the
+      standard deviation of the rows or columns.
+
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{\texttt{sdMatrix}}
+
+  Evaluate your \verb+sdMatrix+ function with the following queries:
+
+<<querySdMatrix, eval=FALSE>>=
+x <- matrix(rnorm(900),300, 3)
+sdMatrix(x, MAR=2)
+x[10, ] <- NA
+sdMatrix(x, MAR=2)
+## should return an error message
+sdMatrix(as.numeric(x), MAR=2)
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\texttt{sdMatrix}}
+<<sdMatrix>>=
+sdMatrix <- function(x, MAR=c(1:2), na.rm=TRUE){
+	valid.x <- is(x, "matrix") && is(x[,1], "numeric")
+	if(!valid.x) stop("x must be a numeric")
+	if(length(MAR) != 1 | !MAR %in% 1:2)
+		stop("MAR must be '1' or '2'")
+	msg <- switch(paste("margin", MAR, sep=""),
+		      margin1="row-wise",
+		      margin2="column-wise")
+	message("Calculating the ", msg, " standard deviations")
+	if(any(is.na(x)) && na.rm){
+		warning("Missing values are ignored")
+	}
+	apply(x, MAR, sd, na.rm=na.rm)
+}
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<querySdMatrix>>=
+x <- matrix(rnorm(900),300, 3)
+sdMatrix(x, MAR=2)
+x[10, ] <- NA
+sdMatrix(x, MAR=2)
+## should return an error
+tryCatch(sdMatrix(as.numeric(x), MAR=2),
+	 error=function(e)
+	 message("error in sdMatrix as expected"))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Debugging}
+
+  There are many mechanisms for debugging in \R{}:
+
+  \begin{itemize}
+  \item \texttt{browser}
+  \item \texttt{debug}
+  \item \texttt{recover}
+  \item \texttt{trace}
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Debugging interactively}
+
+  \begin{itemize}
+
+    \item a \texttt{browser} can be inserted into a function for interactive debugging
+
+    \item Browsers allow one to step through a function line by line
+
+    \item Browsers are useful not just for fixing bugs, but for
+      understanding how a function works
+
+    \item Perhaps the most powerful of \R{}'s bugging utilities is the
+      \texttt{trace} function
+
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\texttt{trace}}
+{\small
+  \begin{verbatim}
+trace                   package:base                   R Documentation
+
+Interactive Tracing and Debugging of Calls to a Function or Method
+
+Description:
+
+     A call to 'trace' allows you to insert debugging code (e.g., a
+     call to 'browser' or 'recover') at chosen places in any function.
+     A call to 'untrace' cancels the tracing.  Specified methods can be
+     traced the same way, without tracing all calls to the function.
+     Trace code can be any R expression.  Tracing can be temporarily
+     turned on or off globally by calling 'tracingState'.
+
+Usage:
+
+     trace(what, tracer, exit, at, print, signature,
+           where = topenv(parent.frame()), edit = FALSE)
+     untrace(what, signature = NULL, where = topenv(parent.frame()))
+
+     tracingState(on = NULL)
+     .doTrace(expr, msg)
+\end{verbatim}
+  }
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\texttt{trace}}
+To illustrate, the following code can be used to insert a browser in
+our \texttt{sdMatrix} function:
+
+<<trace,eval=FALSE>>=
+x <- matrix(rnorm(1000), nrow=10, ncol=10)
+source("functions.R")
+trace(sdMatrix, browser)
+sdMatrix(x, MAR=1)
+@
+\end{frame}
+
+
+%<<cleanup, echo=FALSE>>=
+%unloadNamespace("SweaveListingUtils")
+%rm(list=ls())
+%@
+
+\end{document}

@@ -1,0 +1,1253 @@
+% Sweave("EDA.Rnw")
+% tools::texi2pdf("EDA.tex")
+\documentclass[ignorenonframetext,article,shortnames]{beamer}
+%\documentclass[article,shortnames]{beamer}
+\usepackage{url}
+\usetheme{Boadilla}
+\mode<presentation>
+\usecolortheme{seahorse}
+%\usepackage{pgfpages}
+%\pgfpagesuselayout{4 on 1}[border, shrink=5mm]
+%\documentclass[ignorenonframetext]{beamer}
+%\mode<presentation>
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{color}
+\usenavigationsymbolstemplate{}
+%\RequirePackage{fancyvrb}
+%\RequirePackage{listings}
+
+\newcommand{\R}{\textsf{R}}
+\newcommand{\Rpackage}[1]{\textit{#1}}
+\newcommand{\Rfunction}[1]{\texttt{#1}}
+\newcommand{\Robject}[1]{\texttt{#1}}
+\newcommand{\Rclass}[1]{\Robject{#1}}
+\newcommand{\graphics}{\Rpackage{graphics}}
+\newcommand{\Sthree}{\textsf{S3}}
+\newcommand{\Sfour}{\textsf{S4}}
+
+% %%% important : keep the following comment in
+\SweaveOpts{prefix.string=EDA-figs/EDA}
+%% -------------------------------------------------------------------------------
+%<<SweaveListingsPreparations, results=tex, echo=FALSE, strip.white=false>>=
+%require(SweaveListingUtils)
+%SweaveListingoptions(intermediate = FALSE)
+%SweaveListingPreparations()
+%setToBeDefinedPkgs(pkgs = c("SweaveListingUtils","distr"),
+%                   keywordstyles = c("\\bf\\color{blue}","\\bf\\color{red}"))
+%@
+% -------------------------------------------------------------------------------
+%\lstdefinestyle{TeXstyle}{fancyvrb=true,escapechar=`,language=[LaTeX]TeX,%
+%                        basicstyle={\color{black}\small},%
+%                        keywordstyle={\bf\color{black}},%
+%                        commentstyle={\color{Rcommentcolor}\ttfamily\itshape},%
+%                        literate={<-}{<-}2{<<-}{<<-}2}
+%
+% -------------------------------------------------------------------------------
+\title{Using \R{} for Exploratory Data Analysis}
+\author{Rob Scharpf}
+\date{Nov 9, 2011}
+\begin{document}
+% -------------------------------------------------------------------------------
+% use listings package to format output of S code
+%  -- used to avoid escaping problems (e.g., $ in output)
+
+<<packages>>=
+library(golubEsets)
+library(plotrix)
+library(RColorBrewer)
+@
+
+
+\frame{
+  \maketitle
+}
+
+\frame{
+  \frametitle{About this talk}
+  \begin{itemize}
+    \item This talk was prepared using \Rpackage{Sweave}
+    \item The tables and figures used in this talk can be reproduced
+      by cutting/pasting the commands into your \R{} session
+   \end{itemize}
+}
+
+\frame{
+  \frametitle{Resources}
+  \begin{itemize}
+  \item CRAN (\url{http://cran.r-project.org/})
+  \item The JHSPH biostatistics computing club \url{http://www.biostat.jhsph.edu/bit/compintro/}
+  \item Bioconductor (\url{www.bioconductor.org}): For genomic
+    experimental data, annotation, and software
+  \item google
+ \end{itemize}
+}
+
+
+\frame{
+  \frametitle{Suggested Reading}
+  \begin{itemize}
+  \item The Visual Display of Quantitative Information \cite{Tufte1983}
+    (general)
+  \item Introductory Statistics with \R{} \cite{Dalgaard2002}
+  \item Writing \R{} extensions (CRAN)
+  \item Lattice: Multivariate Data Visualization with \R{} \cite{Sarkar2008}
+  \item \R{} Programming for Bioinformatics \cite{Gentleman2009}
+    (Intermediate)
+  \item R Graphics \cite{Murrell2006} (Discussion of grid is advanced)
+  \item Software for Data Analysis: Programming with \R{} \cite{Chambers2008}
+    (Advanced)
+ \end{itemize}
+}
+
+
+
+\frame{
+  \frametitle{Keys to efficient computing}
+  \begin{itemize}
+
+  \item Learn to type
+
+  \item Learn a single editor that provides
+    \begin{itemize}
+    \item syntax highlighting for \R{}, html, \textsf{C/C++}, Perl,
+      bash shell, \LaTeX{}, \ldots.
+    \item mouse-free editing (copy/paste) and movement
+    \item Emacs is one of the best
+    \end{itemize}
+
+  \item Learn \LaTeX{}
+
+  \item Learn \textsf{S}weave
+
+  \item Learn basic unix commands
+
+  \item Avoid
+    \begin{itemize}
+    \item using Excel: {\small See ``Using Microsoft Excel to Obscure your Data
+        and Annoy your Readers'' - K. Broman
+        (\url{http://www.biostat.wisc.edu/~kbroman/presentations/graphs_uwpath08_handout.pdf})}
+    \item using a mouse
+    \end{itemize}
+  \end{itemize}
+}
+
+\begin{frame}[fragile]
+  \frametitle{Exploring data}
+{\small
+<<golubEsets,eval=FALSE>>=
+source("http://bioconductor.org/biocLite.R")
+biocLite("golubEsets")  ## will install Biobase as well
+library(golubEsets)
+@
+<<trainingdata>>=
+data(Golub_Train)
+Golub_Train
+@
+}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Exploring data}
+<<expression>>=
+x <- exprs(Golub_Train) ## don't worry about this
+str(x)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<class>>=
+dim(x)
+class(x)
+head(x)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<tail>>=
+tail(x)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{itemize}
+    \item \verb+str+ works well for displaying the structure of most objects
+
+    \item Some objects are too complex to examine with \verb+str+, particularly S4 class
+      objects.
+
+    \item When available, \verb+show+ methods can provide more
+      effective summaries
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Examine the Golub object}
+\verb+Golub_Train+ is an example of a S4 class \verb+ExpressionSet+
+{\small
+<<strgolub>>=
+  str(Golub_Train)
+@
+}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Examine the Golub object}
+<<>>=
+  show(Golub_Train)
+@
+
+{\scriptsize try typing just the object name}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{A brief note about classes/methods in \R{}}
+  \begin{itemize}
+    \item Classes and methods in \R{} (and \textsf{S}) were originally
+      developed using ``\textsf{S3}''
+      \begin{itemize}
+      \item \Sthree{} class defined by class attribute of object
+      \item As a formal definition of what constitutes a class is not
+        defined, \Sthree{} is an \emph{informal} implementation of
+        classes/methods
+      \item A lot of code in \R{} is written in \Sthree{}
+        methods/classes (as \Sfour{} did not yet exist)
+      \end{itemize}
+    \item \Sfour{} classes and methods were developed more recently
+      and provide
+      \begin{itemize}
+      \item formal class defintions (more reliable)
+      \item inheritance (promoting code reuse)
+      \item See \cite{Chambers2008} for the definitive resource
+      \end{itemize}
+    \end{itemize}
+  \end{frame}
+
+
+\frame{
+  \frametitle{Exploratory Data Analysis (EDA)}
+  EDA:  {\em An approach to analysing data for the purpose of formulating
+  hypotheses worth testing, complementing the tools of conventional
+  statistics for testing hypotheses} - J.W. Tukey
+}
+
+
+\begin{frame}
+  \begin{itemize}
+
+  \item Visual summaries are an essential aspect of EDA
+
+  \item Tufte book reviews elements of effective visualizations
+
+ \item Broman's website reviews the elements of ineffective visualizations
+{\scriptsize        (\url{http://www.biostat.wisc.edu/~kbroman/presentations/graphs_uwpath08_handout.pdf})}
+
+  \end{itemize}
+
+\end{frame}
+
+%\begin{frame}
+%  \frametitle{Use a lot of ink to convey very little information}
+%  \framesubtitle{Broman's top 10: Number 5}
+%  \begin{center}
+%    \includegraphics[width=\textwidth]{EDA-figs/hummer_fig4.jpg}
+%  \end{center}
+%\end{frame}
+%
+%
+%\begin{frame}
+%  \frametitle{Use 3d pie charts and other gratuitous devices}
+%  \framesubtitle{Broman's to 10: Number 6}
+%  \includegraphics[width=\textwidth]{EDA-figs/cawley_fig1.jpg}
+%\end{frame}
+%
+%
+%
+%\begin{frame}
+%  \frametitle{A bad table}
+%  \framesubtitle{Broman's top 10: Honorable mention}
+% \includegraphics[width=0.8\textwidth]{EDA-figs/paik_tab5.jpg}
+%\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{EDA:  A motivating example with Anscombe's data}
+%  \framesubtitle{\R{} functions: \Rfunction{data}, \Rfunction{str}}
+<<datasets>>=
+datasets <- data(package="datasets")
+str(datasets)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{EDA:  A motivating example with Anscombe's data}
+  \framesubtitle{\R{} functions: \Rfunction{help} or ``?''}
+ \begin{itemize}
+ \item The \Robject{anscombe} dataset is one of the 102 available in
+   the \Rpackage{datasets} package.
+ \item The data in the \Rpackage{datasets} package are {\emph lazy
+     loaded} in \R{}'s workspace -- no need to install the
+   \Rpackage{datasets} package.
+ \item Here are 3 equivalent ways to learn about the
+   \Robject{anscombe} dataset:
+ \end{itemize}
+
+<<questionanscombe>>=
+help(anscombe)
+@
+or
+<<question2anscombe>>=
+?anscombe
+@
+or
+<<question3anscombe>>=
+"?"(anscombe)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Anscombe's data}
+  \framesubtitle{\R{} function: \Rfunction{print}, \Rfunction{class}}
+
+<<stranscombe>>=
+print(anscombe)
+class(anscombe)
+@
+
+{\scriptsize If the dataset were larger, \Rfunction{str} would be much
+better than \Rfunction{print}}
+
+\end{frame}
+
+%\begin{frame}[fragile]
+%  \frametitle{Anscombe's data}
+%  \framesubtitle{\R{} function: \Rfunction{summary}}
+%<<summaryanscombe>>=
+%summary(anscombe)[,1:6]
+%@
+%{\scriptsize Not that useful}
+%\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Scientific question: Is there a linear relationship of the x's and the y's }
+ \framesubtitle{\R{} function: \Rfunction{cor}}
+
+<<correlation>>=
+ cor(anscombe[["x1"]], anscombe[["y1"]])
+ cor(anscombe[["x2"]], anscombe[["y2"]])
+ cor(anscombe[["x3"]], anscombe[["y3"]])
+ cor(anscombe[["x4"]], anscombe[["y4"]])
+@
+
+ Yes!  All of the $x$ and $y$ variables are strongly correlated, and
+ the correlation is the same for each.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Anscombe's data}
+  \framesubtitle{Let's visualize the relationship of $x$ and $y$}
+<<exampleanscombe,fig=TRUE,results=hide,include=FALSE>>=
+example(anscombe, ask=FALSE)
+@
+\centering
+\includegraphics[width=0.5\textwidth]{EDA-figs/EDA-exampleanscombe}
+
+%{\tiny More about the \Rfunction{example} function in a minute}
+{\scriptsize Oops!  The Pearson correlation coefficient measures the
+  strength of the linear relationship between two variables.  For
+  variables 2-4, the relationship is clearly non-linear.}
+\end{frame}
+
+
+\frame{
+  \frametitle{Using \R{} for Visualizing Data}
+  \begin{itemize}
+  \item \Rpackage{graphics}: simplest interface
+
+  \item \Rpackage{grid}: more advanced \cite{Murrell2006}
+    \begin{itemize}
+    \item Lattice: package specializing in multivariate display based
+      on grid \cite{Sarkar2008}
+    \end{itemize}
+  \item \Rpackage{ggplot2} \cite{Wickham2009}
+  \end{itemize}
+}
+
+
+\frame{
+  \frametitle{}
+  \includegraphics[width=0.8\textwidth]{EDA-figs/murrell_fig_1_12.pdf}
+\\
+  {\scriptsize Figure from Murrell}
+}
+
+
+\section{Using the graphics package for EDA}
+
+\begin{frame}[fragile]
+  \frametitle{\graphics{}: Simple example}
+  \framesubtitle{plot \Robject{data.frame}}
+<<pressureplot_df,fig=TRUE,include=FALSE>>=
+plot(pressure)
+text(150, 600,
+     "Pressure (mm Hg)\n versus \n
+      Temperature (Celcius)")
+@
+\begin{center}
+\includegraphics[width=0.4\textwidth]{EDA-figs/EDA-pressureplot_df}
+\end{center}
+\vspace{-0.5em}
+{\scriptsize We could keep adding to this original plot with
+  \Rpackage{graphics} functions such as \Rfunction{lines},
+  \Rfunction{points}, \ldots.}
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{\graphics{}: Simple example}
+  \framesubtitle{plot \Robject{formula}}
+<<pressureplot_formula,fig=TRUE,include=FALSE>>=
+plot(pressure~temperature, data=pressure)
+text(150, 600,
+     "Pressure (mm Hg)\n versus \n
+      Temperature (Celcius)")
+@
+\begin{center}
+\includegraphics[width=0.4\textwidth]{EDA-figs/EDA-pressureplot_formula}
+\end{center}
+{\scriptsize We could keep adding to this original plot with
+  \Rpackage{graphics} functions such as \Rfunction{lines},
+  \Rfunction{points}, \ldots.}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\graphics{}: Simple example}
+  \framesubtitle{plot \Robject{numeric}}
+<<pressureplot_numeric,fig=TRUE,include=FALSE>>=
+plot(pressure[["temperature"]],
+     pressure[["pressure"]],
+     xlab="temperature",
+     ylab="pressure")
+text(150, 600,
+     "Pressure (mm Hg)\n versus \n
+      Temperature (Celcius)")
+@
+\vspace{-2em}
+\begin{center}
+\includegraphics[width=0.4\textwidth]{EDA-figs/EDA-pressureplot_numeric}
+\end{center}
+{\scriptsize We could keep adding to this original plot with
+  \Rpackage{graphics} functions such as \Rfunction{lines},
+  \Rfunction{points}, \ldots.}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\texttt{plot} is a S3 method}
+
+  To see the classes for which the \Rfunction{plot} method is defined
+
+<<S3methodPlot>>=
+methods(plot)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{When $x$ and $y$ are numeric}
+  A plot method for the \Rclass{numeric} class was not
+    explicitly defined. What function was used to plot the data when
+    both $x$ and $y$ are numeric?
+
+    \vspace{3em}
+    {\scriptsize Hint: read the help file for \Rfunction{plot}}
+\end{frame}
+
+
+  \begin{frame}[fragile]
+    \frametitle{Editing plots in \texttt{graphics} }
+    \vspace{-4em}
+    \begin{center}
+      \includegraphics[width=0.4\textwidth]{EDA-figs/EDA-pressureplot_df}
+\end{center}
+\begin{itemize}
+\item plotting symbols, labels, axes, etc. can be modified by
+  additional arguments passed to \Rfunction{plot}.
+\item many of the graphical parameters are passed to the
+  \Rfunction{par}.
+  \begin{itemize}
+  \item Read the help for \Rfunction{par}
+  \end{itemize}
+\item Adding to a plot: see \Rfunction{points}, \Rfunction{lines},
+  \Rfunction{grid}, \Rfunction{abline}, \Rfunction{axis},
+  \Rfunction{text}, and \Rfunction{legend}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Editing plots in \texttt{graphics}}
+<<pressureplot2,fig=TRUE,include=FALSE>>=
+par(las=1) ## make y-axis labels horizontal
+plot(pressure, pch=21, cex=0.8, bg="lightblue")
+grid(nx=10, ny=10, col="grey") ## a function in graphics
+text(150, 600,
+     "Pressure (mm Hg)\n versus \n
+      Temperature (Celcius)")
+box(col="orange")
+@
+\vspace{-4em}
+\begin{center}
+\includegraphics[width=0.4\textwidth]{EDA-figs/EDA-pressureplot2}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Output devices} We could also direct the output to a
+  {\emph device}, such as a pdf device.
+<<opendevice,eval=FALSE,echo=TRUE>>=
+pdf("murrell_1_12.pdf")##opens device
+plot(pressure)
+dev.off()##closes the device
+@
+{\scriptsize Other devices: \Rfunction{png}, \Rfunction{bitmap},
+  \Rfunction{jpeg}, \Rfunction{postscript}.  For high-dimensional
+  data, \Rfunction{jpeg} and \Rfunction{png} may be preferable to
+  \Rfunction{pdf} and \Rfunction{postscript}}
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Back to the Golub training data}
+  \begin{itemize}
+  \item \verb+boxplot+ is useful for large data
+  \end{itemize}
+
+<<boxplot, fig=TRUE,include=FALSE>>=
+x <- exprs(Golub_Train)
+boxplot(x, pch=".")
+@
+
+{\small: Read the entire \verb+?par+ helpfile once}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{center}
+  \includegraphics[width=0.7\textwidth]{EDA-figs/EDA-boxplot.pdf}
+  \end{center}
+  \vspace{-1em}
+  {\small how could we improve this graphic?}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Transformations are often helpful}
+  {\small
+<<logboxplot, fig=TRUE, include=FALSE>>=
+boxplot(log2(x), pch=".", col="grey",
+	ylab=expression(log[2](expression)),
+	xlab="sample index")
+@
+}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+  \frametitle{Transformations are often helpful}
+  \begin{center}
+  \includegraphics[width=0.7\textwidth]{EDA-figs/EDA-logboxplot.pdf}
+  \end{center}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Visualizing continuous and categorical}
+\framesubtitle{Orchard Sprays data}
+<<boxplotOrchardSprays,fig=TRUE,include=FALSE>>=
+par(las=1)
+boxplot(decrease~treatment,data=OrchardSprays,
+	col="lightblue", boxwex=0.5,
+	ylab="decrease in volume")
+@
+\vspace{-2em}
+\begin{center}
+\includegraphics[width=0.5\textwidth]{EDA-figs/EDA-boxplotOrchardSprays}
+\end{center}
+\vspace{-3em}
+{\scriptsize
+Note
+\begin{itemize}
+\item Data is right-skewed (most of the data is centered at smaller
+  values; median < mean)
+\item Difficult to examine the distributions in groups A-B
+  because of large values in E-F
+\end{itemize}
+}
+\end{frame}
+
+\begin{frame}[fragile]
+\framesubtitle{Choose a different scale (e.g., log)}
+<<boxplotOrchardSprays2,fig=TRUE,include=FALSE>>=
+par(las=1)
+boxplot(decrease~treatment,data=OrchardSprays,
+	col="lightblue", boxwex=0.5, log="y",
+	ylab="log decrease in volume")
+@
+\vspace{-2em}
+\begin{center}
+\includegraphics[width=0.5\textwidth]{EDA-figs/EDA-boxplotOrchardSprays2}
+\end{center}
+\vspace{-3em}
+{\scriptsize
+Note
+\begin{itemize}
+\item Data is less skewed
+\item Data for all categories can be visualized on the same scale
+\end{itemize}
+}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Multivariate data}
+  \framesubtitle{\Rfunction{pairs}}
+<<pairsIris,fig=TRUE,include=FALSE>>=
+pairs(iris[1:4], pch = 21,
+      main = "3 iris species",
+      bg = c("red", "green3", "blue")
+      [unclass(iris$Species)])
+@
+\begin{center}
+\includegraphics[width=0.4\textwidth]{EDA-figs/EDA-pairsIris}
+\end{center}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+  \frametitle{Colors}
+  \begin{itemize}
+  \item See Section 3.2.1 of \R{} Graphics \cite{Murrell2006}
+  \item Packages:\Rpackage{RColorBrewer}, \Rpackage{colorspace}
+  \item Useful functions: \Rfunction{rgb}, \Rfunction{palette}, \Rfunction{grey}
+ \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Color Palettes}
+<<RColorBrewer,fig=TRUE,include=FALSE>>=
+if(!require(RColorBrewer)) {
+	biocLite("RColorBrewer") ## requires internet connection
+	library(RColorBrewer)
+}
+display.brewer.all()
+@
+\vspace{-4em}
+\begin{center}
+\includegraphics[width=0.7\textwidth]{EDA-figs/EDA-RColorBrewer}
+\end{center}
+\end{frame}
+
+
+
+\frame{
+  \frametitle{Arranging multiple plots}
+  \vspace{-2em}
+ \begin{center}
+  \includegraphics[width=0.5\textwidth]{EDA-figs/murrell_fig_3_2.pdf}
+  \end{center}
+  \scriptsize{ See oma (outer margins) and mar (margins) arguments for
+    the function \Rfunction{par}.}\\
+  Figure from \cite{Murrell2006}
+}
+
+\frame{
+  \frametitle{Arranging multiple plots}
+  \begin{center}
+  \includegraphics[width=0.6\textwidth]{EDA-figs/murrell_3_14.pdf}
+  \end{center}
+  \vspace{-1em}
+  Figure from \cite{Murrell2006}
+}
+
+\begin{frame}[fragile]
+  \frametitle{Arranging multiple plots}
+<<anscombepar,eval=FALSE,echo=TRUE>>=
+op <- par(mfrow=c(2,2),
+	  mar=.1+c(4,4,1,1),
+	  oma= c(0,0,2,0))
+@
+\begin{center}
+\includegraphics[width=0.4\textwidth]{EDA-figs/EDA-exampleanscombe}
+\end{center}
+{\scriptsize Better use of space would be to decrease the settings for
+  \Rfunction{mar} and increase the settings for \Rfunction{oma}}
+\end{frame}
+
+
+\frame{
+  \frametitle{A brief summary of the visualization tools in \graphics{}}
+
+  \begin{itemize}
+
+    \item univariate EDA for continuous variables
+
+      \begin{itemize}
+
+      \item stem and leaf plots: \Rfunction{stem}  (not useful for big datasets)
+
+      \item histograms: \Rfunction{hist}
+
+      \item boxplots: \Rfunction{boxplot}
+
+     \end{itemize}
+
+    \item x versus y scatterplots: \Rfunction{plot}, \Rfunction{pairs}
+
+   \item plotting continuous data stratified by a categorical
+     covariate: \Rfunction{boxplot}
+
+   \item Not covered, but useful: \Rfunction{image},
+     \Rfunction{qqplot}, \Rfunction{qqnorm}, \Rfunction{hclust}
+     (some of these are in the \Rpackage{statistics} package).
+   \end{itemize}
+}
+
+\begin{frame}[fragile]
+  \frametitle{The \texttt{lattice} package}
+
+  Why use \texttt{lattice}?
+
+  \begin{itemize}
+
+    \item efficient use of space for multi-panel displays using
+      \texttt{graphics} functions require \emph{a lot} of tweaking
+
+    \item in \texttt{lattice}, the layout of the display is more or
+      less automatic
+
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The \texttt{lattice} package}
+  \begin{itemize}
+
+  \item \Rpackage{lattice} is based on \Rpackage{grid} graphics
+
+  \item In \Rpackage{graphics}, the \Rfunction{plot} function plots
+    directly on a graphics device.
+
+  \item In \Rpackage{lattice}, an object of class \Robject{trellis} is
+    returned.
+
+  \item To make a plot using \Rpackage{lattice}, one prints the
+    \Robject{trellis} object
+
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{A simple example}
+<<latticepressure, fig=TRUE,include=FALSE>>=
+require("lattice")
+p <- xyplot(pressure~temperature, pressure)
+class(p)
+print(p)
+@
+\vspace{-5em}
+\begin{center}
+\includegraphics[width=0.4\textwidth]{EDA-figs/EDA-latticepressure}
+\end{center}
+\vspace{-1em}
+{\scriptsize
+  \begin{itemize}
+  \item Just as easy to do this using \Rfunction{plot}
+  \item Arguments are generally of the form $y\sim~x|z, \mbox{data}$
+  \end{itemize}
+}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{A trivial panel function}
+
+<<panelfun, fig=TRUE, include=FALSE>>=
+mypanel <- function(x, y, ..., subscripts){
+	panel.grid(v=10,h=10, lty=3)
+	panel.xyplot(x, y, ...)
+}
+p <- xyplot(pressure~temperature, pressure,
+	    panel=mypanel)
+print(p)
+@
+\vspace{-3em}
+\begin{center}
+\includegraphics[width=0.4\textwidth]{EDA-figs/EDA-panelfun}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{A better example from \cite{Sarkar2008}}
+  {\scriptsize
+<<quakes>>=
+cuts <- cut(quakes$depth, 100, labels=FALSE)
+depth.color <- grey.colors(100)[cuts]  ## cuts is an integer
+                                       ## this is a clever way of index grey colors such that
+                                       ## quakes with small depth are dark grey and
+                                       ## those with large depth are light grey
+quakes$col <- depth.color
+quakes$Magnitute <- equal.count(quakes$mag, 4)
+@
+}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{A better example from \cite{Sarkar2008}}
+  {\scriptsize
+<<>>=
+depth.ord <- rev(order(quakes$depth))
+quakes.ordered <- quakes[depth.ord, ]
+p2 <- xyplot(lat ~ long| Magnitute,
+	     quakes.ordered, col="black",
+	     aspect="iso", cex=0.8,
+	     fill.color=quakes.ordered$col,
+	     panel=function(x, y, fill.color,
+	     ..., subscripts){
+		     fill <- fill.color[subscripts]
+		     panel.grid(h=-1, v=-1)
+		     panel.xyplot(x, y, pch=21,
+				  fill=fill, ...)
+	     }, xlab="Longitude",
+	     ylab="Latitude")
+@
+}
+\vspace{-1em}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{A better example in \cite{Sarkar2008}}
+<<p2,fig=TRUE,include=FALSE>>=
+print(p2)
+@
+\vspace{-4em}
+\begin{center}
+  \includegraphics[width=0.7\textwidth]{EDA-figs/EDA-p2}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Example from the \texttt{MinimumDistance} package}
+\begin{center}
+  \includegraphics[width=0.7\textwidth]{EDA-figs/MinimumDistance.pdf}
+\end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Programming in \R{}}
+
+  \begin{itemize}
+
+  \item \R{} is an interpreted language which makes it slow relative
+    to compiled langues like C
+
+    \begin{itemize}
+
+    \item \texttt{for} loops in \R{} should be avoided when
+      possible
+
+      \end{itemize}
+
+    \item One approach to making code faster is to rewrite a specific
+      function or task in C.
+
+    \item Often a much better strategy is to optimize the code in
+      \R{}.  Substantial gains in speed can be acheived by using
+      \R{}'s vectorized functions (these typically have a back-end
+      written in C)
+
+    \item Examples of vectorized functions include mathematical
+      operators (\texttt{+, -, log, *})
+
+
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Vectorized functions}
+<<log2>>=
+x <- exprs(Golub_Train)
+suppressWarnings(system.time(log2(x[,1])))
+system.time(x[, 1] + x[, 2])
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{When vectorization is not possible}
+
+  \begin{itemize}
+
+  \item \verb+apply+, \verb+lapply+, \verb+tapply+, and \verb+mapply+
+    can make code more readable
+
+  \item example: calculate the mean log base 2 expression value for each gene
+
+  \end{itemize}
+{\scriptsize
+<<apply>>=
+log.x <- log2(x)
+mns <- rep(NA, nrow(x))
+system.time(for(i in seq_along(mns))
+	    mns[i] <- mean(log.x[i, ], na.rm=TRUE))
+## compare to
+system.time(mns2 <- apply(log.x, MARGIN=1, FUN="mean", na.rm=TRUE))
+## common functions often have a vectorized solution
+system.time(mns3 <- rowMeans(log.x, na.rm=TRUE))
+@
+}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\texttt{all.equal} and \texttt{identical}}
+
+<<all.equal>>=
+all.equal(mns, mns2)
+identical(mns, mns2)
+names(mns) <- rownames(log.x)
+identical(mns, mns2)
+all.equal(mns2, mns3)
+@
+
+\end{frame}
+
+%\begin{frame}[fragile]
+%  \frametitle{Vectorized functions}
+%
+%  Miscellaneous vectorized functions for large matrices are in the \
+%
+%  \verb+rowMin+, \verb+rowMax+, \verb+rowMeans+, \verb+rowSds+
+%
+%\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Exercise}
+
+  The gender for each column (sample) in the \verb+Golub_Train+ data
+  can be accessed by
+
+<<gender>>=
+gender <- Golub_Train$Gender
+@
+
+Calculate a t-statistic comparing males to female for each gene using
+\R{}'s vectorized functions. Formula for t-statistic (for one gene)
+assuming unequal population variances:
+
+\begin{equation*}
+  \frac{{\bar x}_F - {\bar x}_M}{(\frac{s_F^2}{n_f} + \frac{s_M^2}{n_m})^{1/2}}
+\end{equation*}
+The formula for a sample variance:
+\begin{equation*}
+  s^2 = \frac{\sum_{i=1}^n(x_i - {\bar x})^2}{n-1}
+\end{equation*}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Exercise}
+
+\begin{itemize}
+
+  \item Calculate the t-statistic on the log-scale
+  \item Ignore samples for which the gender is missing
+  \item Check your answer for a random sample (see \verb+sample+
+    function) of genes using the \verb+t.test+ function
+  \item Make a histogram of the result
+  \end{itemize}
+\end{frame}
+
+<<eval=FALSE>>=
+log.x <- log.x[, !is.na(gender)]
+gender <- gender[!is.na(gender)]
+X.M <- rowSums(log.x, na.rm=TRUE)
+not.na <- !is.na(log.x)
+n.M <- rowSums(not.na[, gender=="M"])
+n.F <- rowSums(not.na[, gender=="F"])
+Xbar.M <- X.M/n.M
+Xbar.F <- X.F/n.F
+SS.M <- rowSums(log.x[, gender=="M"] - Xbar.M)^2
+SS.F <- rowSums(log.x[, gender=="M"] - Xbar.M)^2
+S.M <- SS.M/(n.M-1)
+S.F <- SS.F/(n.F-1)
+@
+
+\begin{frame}[fragile]
+  \frametitle{Exercise}
+
+  \begin{itemize}
+
+  \item How many \texttt{NaN} values appearing in the log-transformed
+    Golub data for each sample
+
+  \item hint: \verb+NA+ and \verb+NaN+ have a special meaning in
+    \R{}. Use the functions \verb+is.na+ and
+    \verb+is.nan+, respectively,  to test for
+    their existance.
+
+  \end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{\texttt{table}}
+
+  How many \verb+NaN+ values in the first sample are also \verb+NaN+
+  in the second sample?
+
+<<table>>=
+table(is.nan(log.x[,1]), is.nan(log.x[,2]))
+@
+\end{frame}
+
+%\begin{frame}[fragile]
+%
+%\end{frame}
+
+
+\begin{frame}
+  \frametitle{Summary remarks }
+  \begin{itemize}
+  \item Plot your data before thinking too hard about the appropriate
+    statistical analysis
+  \item There are two principal means for plotting data in \R{}
+    \begin{itemize}
+    \item \Rpackage{graphics}
+    \item \Rpackage{grid}: \Rpackage{lattice} is based on \Rpackage{grid}.
+    \end{itemize}
+  \item For less complex data, it is often easier to use
+    \Rpackage{graphics} (\Rfunction{plot}, \Rfunction{boxplot},
+    \Rfunction{boxplot}, \Rfunction{hist}, \Rfunction{pairs}).
+
+  \item Familiarity with the \Rfunction{par} function is key to
+    customizing \Rpackage{graphics} plots.
+
+    \end{itemize}
+  \end{frame}
+
+\begin{frame}
+  \frametitle{Summary remarks}
+  \begin{itemize}
+  \item \Rpackage{lattice} can be very useful for multivariate
+    displays
+
+  \item Understanding \Rfunction{panel} functions is essential to
+    \Rpackage{lattice}
+
+  \item Other functions in \Rpackage{lattice} include
+    \Rfunction{bwplot}, \Rfunction{dotplot}, and \Rfunction{histogram}.
+
+  \item Try the \Rfunction{demo} function written for
+    \Rpackage{lattice}
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Summary remarks}
+  \begin{itemize}
+  \item Its generally more efficient to write faster \R{} code than
+    interface to a compiled language like C
+
+    \begin{itemize}
+    \item \R{} code can be profiled to find slow and potentially
+      inefficient functions
+    \end{itemize}
+
+  \item Make use of \R{}'s vectorized functions whenever possible
+
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}[allowframebreaks]{Useful References}
+ \begin{thebibliography}{Tufte1983}
+%   \bibitem[Tukey, 1977]{Tukey1977}
+%     J.W.~Tukey
+%     \newblock {\em Exploratory Data Analysis}
+%     \newblock Addison-Wesley Publishing Co Inc, 1977.
+
+   \bibitem[Murrell, 2006]{Murrell2006}
+     P.~Murrell
+     \newblock {\em \R{} Graphics}
+     \newblock Chapman \& Hall/CRC, 2006.
+
+   \bibitem[Sarkar, 2008]{Sarkar2008}
+     D.~Sarkar
+     \newblock{\em Lattice: {M}ultivariate Data Visualization with \R{}}
+     \newblock Springer-Verlag, 2008.
+
+   \bibitem[Dalgaard, 2002]{Dalgaard2002}
+     P.~Dalgaard
+     \newblock {\em Introductory Statistics with \R{}}
+     \newblock Springer, 2002.
+
+   \bibitem[Tufte, 1983]{Tufte1983}
+     E.R.~Tufte.
+     \newblock {\em The Visual Display of Quantitative Information}
+     \newblock Graphics Press, 1983.
+
+     \bibitem[Wickham, 2009]{Wickham2009}
+       H.~Wickham
+       \newblock {\em ggplot2: elegant graphics for data analysis}
+       \newblock Springer, 2009
+
+     \bibitem[Hastie, 2003]{Hastie2003}
+       T.~Hastie, R.~Tibshirani, and J.~Friedman
+       \newblock{\em The Elements of Statistical Learning: Data Mining,
+         Inference, and Prediction}
+       \newblock Springer, 2003.
+
+       \bibitem[Gentleman, 2009]{Gentleman2009}
+         R.~Gentleman
+         \newblock{\em \R{} Programming for Bioinformatics}
+         \newblock CRC Press, 2009.
+
+       \bibitem[Chambers, 2008]{Chambers2008}
+         J.M.~Chambers
+         \newblock{\em Software for Data Analysis: Programming with \R{}}
+         \newblock Springer, 2008
+
+  \end{thebibliography}
+\end{frame}
+
+\end{document}
+
+\begin{frame}[fragile]
+  \frametitle{Session Information}
+
+<<sessionInfo,results=tex>>=
+toLatex(sessionInfo())
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\graphics{}: Dissecting the \Robject{anscombe} example}
+  \framesubtitle{\R{} functions: \Rfunction{for}, \Rfunction{lapply},
+  \Rfunction{paste}, \Rfunction{as.name}, \Rfunction{abline}, \Rfunction{get}, \Rfunction{c}}
+
+<<anscombeplot,echo=TRUE,eval=FALSE>>=
+ff <- y ~ x
+for(i in 1:4) {
+	ff[2:3] <- lapply(paste(c("y","x"), i, sep=""),
+			  as.name)
+	plot(ff, data =anscombe, col="red", pch=21,
+	     bg = "orange", cex = 1.2,
+	     xlim=c(3,19), ylim=c(3,13))
+	abline(get(paste("lm.",i,sep="")),
+	       col="blue")
+}
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\graphics{}: Dissecting the \Robject{anscombe} example}
+  \framesubtitle{\R{} functions: \texttt{\~}, \Rfunction{identical}}
+The following is a formula
+<<formulas>>=
+ff <- y ~ x
+@
+Like \verb+?+, the operator \verb+~+ is a method. An equivalent
+expression using the more common \R{} syntax:
+
+<<formula2>>=
+ff2 <- "~"(y,x)
+identical(ff, ff2)
+@
+
+The \R{} packages \Rpackage{lm} and \Rpackage{lattice} make heavy use
+of formulas.
+\vspace{1em}\\
+{\scriptsize See also: \Rfunction{all.equal}.}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\graphics{}: Dissecting the \Robject{anscombe} example}
+  \framesubtitle{\R{} functions:  \Rfunction{for},
+    \Rfunction{lapply}, \Rfunction{paste}, \Rfunction{as.name}}
+
+<<anscombeplot2,echo=TRUE,eval=FALSE>>=
+ff <- y ~ x
+for(i in 1:4) {
+	ff[2:3] <- lapply(paste(c("y","x"), i, sep=""),
+			  as.name)
+}
+@
+
+For each $i$ ($i \in \{1, 2, 3, 4\}$), the \Rfunction{lapply} {\bf
+  applies} the function \Rfunction{as.name} to each element in a {\bf
+  l}ist or vector.  The \Rfunction{lapply} function can be useful for
+more readable and concise code. An equivalent alternative is a nested
+\Rfunction{for} loop.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\graphics{}: Dissecting the \Robject{anscombe} example}
+  \framesubtitle{\R{} functions:  \Rfunction{for},
+    \Rfunction{lapply}, \Rfunction{paste}, \Rfunction{as.name}}
+
+  The equivalent nested \Rfunction{for} loop with \Rfunction{print}
+  statements inserted for clarity:
+<<equivalent>>=
+for(i in 1:4){
+	x <- paste(c("y", "x"), i, sep="")
+	print(x)
+	res <- list()
+	for(j in 1:2){
+		res[[j]] <- as.name(x[j])
+	}
+	ff[2:3] <- res
+	print(ff)
+}
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\graphics{}: Dissecting the \Robject{anscombe} example}
+  \framesubtitle{\R{} functions:  \Rfunction{for},
+    \Rfunction{lapply}, \Rfunction{paste}, \Rfunction{as.name}}
+
+  What two \R{} methods should be in {\bf bold} font in the previous
+  code chunk, but were not?
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\graphics{}:  Dissecting the \Robject{anscombe} example}
+  \framesubtitle{\R{} functions:  \Rfunction{plot}}
+
+<<plotanscombe,fig=TRUE,include=FALSE>>=
+message(ff)
+plot(ff, data =anscombe, col="red", pch=21,
+     bg = "orange", cex = 1.2,
+     xlim=c(3,19), ylim=c(3,13))
+@
+\begin{center}
+\includegraphics[width=0.4\textwidth]{EDA-figs/EDA-plotanscombe}
+\end{center}
+{\scriptsize This uses the \Rfunction{plot} method defined for the
+  class \Rclass{formula}.}
+\end{frame}
+
+<<cleanup,echo=FALSE>>=
+##unloadNamespace("SweaveListingUtils")
+@
+
+\end{document}

@@ -1,0 +1,10 @@
+*.tex
+*.log
+*.aux
+*.pdf
+*.snm
+*.toc
+*.vrb
+*.out
+.auto*
+*.el

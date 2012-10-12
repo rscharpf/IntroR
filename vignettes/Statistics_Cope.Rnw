@@ -1,0 +1,712 @@
+\documentclass[ignorenonframetext,article,shortnames]{beamer}
+\usepackage{url}
+\usetheme{Boadilla}
+\mode<presentation>
+\usecolortheme{seahorse}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{Sweave}
+\usenavigationsymbolstemplate{}
+\RequirePackage{fancyvrb}
+\RequirePackage{listings}
+% %%% important: keep the following comment in
+% %%% (see https://mailman.stat.ethz.ch/pipermail/r-help/2009-July/204747.html)
+% this comment persuades Sweave not to insert \usepackage{Sweave}
+%
+% -------------------------------------------------------------------------------
+\SweaveOpts{keep.source=TRUE}
+% -------------------------------------------------------------------------------
+
+\title{Introduction to Statistics using R}
+\author{Leslie Cope}
+\date{May 2, 2012}
+
+
+\begin{document}
+\begin{frame}
+\maketitle
+\end{frame}
+
+<<<echo=F>>=
+options(width = 55)
+@ 
+
+\begin{frame}[fragile]
+  \frametitle{Load Data}
+ 
+<<datasets>>=
+library(datasets)
+class(iris)
+names(iris)
+dim(iris)
+summary(iris$Petal.Length)
+table(iris$Species)
+@ 
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{explore further}
+  
+
+<<irisBoxplot,fig=T,include=F>>=
+boxplot(iris$Petal.Length~iris$Species)
+
+@ 
+\begin{center}
+
+\includegraphics[width=0.6\textwidth]{Rstats3-irisBoxplot.pdf}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The Basic t-test}
+  Compare mean petal length between species:
+<<ttestErr,echo=T,eval=F>>=
+t.test(Petal.Length~Species,data=iris)
+@ 
+ \begin{verbatim}
+Error in t.test.formula(Petal.Length ~ Species, data = iris) : 
+  grouping factor must have exactly 2 levels
+ \end{verbatim}
+So, subset...
+<<subset>>=
+
+irisVirgVersi=
+  iris[is.element(iris$Species,c("virginica","versicolor")),]
+irisVirgVersi=
+  iris[iris$Species %in% c("virginica","versicolor"),]
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{The Basic t-test}
+  Compare mean petal length in virginica to that in versicolor:
+<<ttest>>=
+irisTest=t.test(Petal.Length~Species,data=irisVirgVersi)
+irisTest
+@ 
+<<<ttest2,eval=F>>=
+t.test(irisVirgVersi$Petal.Length[1:50],
+       irisVirgVersi$Petal.Length[51:100])
+@ 
+\end{frame}
+\begin{frame}
+  \frametitle{The t-test}
+  \begin{itemize}
+    \item For comparing means between two groups \\
+      or comparing a single mean to a predetermined value
+      \item Data should be approximately normally distributed, or sample size should be {\it fairly large}
+\item Test is formalized in terms of a pair of hypotheses: 
+  \begin{description}
+    \item[H0:] the null hypothesis
+      \begin{itemize}
+      \item[] difference in means=0
+        \end{itemize}
+      \item[HA:] the alternative hypothesis
+\begin{itemize}
+  \item[two-sided] difference in means $\neq 0$
+    \item[less] difference in means $< 0$
+      \item[greater] difference in means $> 0$
+  \end{itemize}
+    \end{description}
+    \end{itemize}
+  \end{frame}
+  
+\begin{frame}[fragile]
+  \frametitle{Understanding the t-test}
+ 
+<<mean.variance.setup,echo=F>>=
+set.seed(473433847)
+xm1=rnorm(20,sd=.5);xm1=xm1-mean(xm1);ym1=rnorm(20,sd=.5);ym1=ym1-mean(ym1)+1;xym=c(xm1,ym1)
+xm2=rnorm(20,mean=0,sd=3);xm2=xm2-mean(xm2);ym2=rnorm(20,mean=1,sd=3);ym2=ym2-mean(ym2)+1;xym2=c(xm2,ym2)
+index=rep(c("Group1","Group2"),c(20,20))
+
+@
+
+
+<<meanVar,fig=T,include=F,echo=F>>=
+boxplot(xym~index,lwd=2,cex.axis=1.5,cex.lab=1.5,ylim=range(xym2))
+text(2,-6,cex=1.5,round(t.test(xym~index)$statistic,3))
+points(rep(1,20),xym[1:20],pch=16,cex=1.5)
+points(rep(2,20),xym[21:40],pch=16,cex=1.5)
+@ 
+<<meanVar2,fig=T,include=F,echo=F>>=
+boxplot(xym2~index,lwd=2,cex=2,cex.axis=1.5,cex.lab=1.5,ylim=range(xym2))
+text(2,-6,cex=1.5,round(t.test(xym2~index)$statistic,3))
+points(rep(1,20),xym2[1:20],cex=1.5,pch=16)
+points(rep(2,20),xym2[21:40],cex=1.5,pch=16)
+
+@ 
+\begin{center}
+\includegraphics[width=0.4\textwidth]{Rstats3-meanVar.pdf}
+\includegraphics[width=0.4\textwidth]{Rstats3-meanVar2.pdf}
+\end{center}
+$$t=\frac{\mathrm{mean(group 1)-mean(group 2)}}{\mathrm{std.err.}}$$
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{A Standard Operating Procedure for the t-test: Before}
+  \begin{itemize}
+  \item Satisfy yourself that the difference in group means is a quantity relevant to your scientific question
+    \item Use histograms, quantile-quantile plots $\dots$ to look at your data by group and assure yourself that it is roughly normally distributed (symmetric, bell-shaped)
+\begin{itemize}
+  \item if not, and if sample sizes are not {\it fairly large}, transform the data or use a different test
+  \end{itemize}
+  \item use the {\bf two-sided} alternative, unless you have good
+          prior information that suggests that all plausible
+          alternatives lie in one direction. 
+\item Try to determine ranges of values at which the difference of means
+would be scientifically interesting, inconsequential, implausible . . .
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Exploratory plots to check conditions for the t-test}
+
+
+<<histSym,fig=T,include=F,echo=F>>=
+x=rnorm(50)
+hist(x,cex.axis=1.5,cex.lab=1.5,cex=1.5,cex.main=1.5)
+@ 
+<<histNonSym,fig=T,include=F,echo=F>>=
+hist(exp(x),cex.axis=1.5,cex.lab=1.5,cex=1.5,cex.main=1.5)
+@ 
+
+<<qqSym,fig=T,include=F,echo=T>>=
+qqnorm(x,pch=16,cex.axis=1.5,cex.lab=1.5,cex=1.5)
+@ 
+<<qqNonSym,fig=T,include=F,echo=F>>=
+qqnorm(exp(x),pch=16,cex.axis=1.5,cex.lab=1.5,cex=1.5)
+@ 
+\begin{center}
+\includegraphics[width=0.3\textwidth]{Rstats3-histSym.pdf}
+\includegraphics[width=0.3\textwidth]{Rstats3-qqSym.pdf}\\
+
+\includegraphics[width=0.3\textwidth]{Rstats3-histNonSym.pdf}
+\includegraphics[width=0.3\textwidth]{Rstats3-qqNonSym.pdf}
+\end{center}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Lies, Damn Lies and P-values}
+  \begin{itemize}
+    \item The p-value summarizes the strength of evidence 
+      supporting  the alternative hypothesis by describing how unusual the observed difference in means would be {\bf if the null hypothesis were true}  
+    \begin{itemize}
+       \item small p means results are poorly explained by null
+         \item large p means that results are compatible with the null
+           and with {\it neighboring} alternatives, so it does not
+           lead to the conclusion that the null is true.  
+\end{itemize}
+\end{itemize}
+  The CI gives the range of alternatives that are
+    compatible with the data 
+  
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Quiz}
+ What conclusion do we draw here?
+ \begin{verbatim}
+sample estimates:
+mean in group cases    mean in group controls 
+            1.4       	1.2
+p-value=0.23
+\end{verbatim}
+ 
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Quiz}
+  What conclusion do we draw here?
+ \begin{verbatim}
+sample estimates:
+mean in group treated    mean in group untreated 
+            5.7      	5.9
+p-value=0.23
+\end{verbatim}
+ 
+ "We observed a statistically non-significant decrease of 0.2 units
+ after treatment''
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Standard Operating Procedure: After}
+
+  \begin{itemize}
+    \item Verify the test parameters that show up in the output  
+    \item Look at the group means and the difference between them first, compare to your prior expections
+\item Next, look at the confidence interval, this is the range of
+ likely values for the true difference of means
+  \begin{itemize}
+    \item  if the entire CI lies within the scientifically
+      inconsequential range, the result is negative
+\item Its great if the CI lies entirely within the interesting range,
+  the result is positive
+  \item A CI that bridges these ranges calls for more judgement both in relaying results and planning follow up studies
+ \end{itemize}
+ 
+    \end{itemize}
+\end{frame}
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]
+  \frametitle{Back to the t-test in R}
+  \begin{verbatim}
+
+Usage:
+     t.test(x, ...)
+     
+     ## Default S3 method:
+     t.test(x, y = NULL,
+            alternative = c("two.sided", "less", "greater"),
+            mu = 0, paired = FALSE, var.equal = FALSE,
+            conf.level = 0.95, ...)
+     
+     ## S3 method for class 'formula':
+     t.test(formula, data, subset, na.action, ...)
+
+\end{verbatim}
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Our Data}
+<<ttest.return>>=
+irisTest=t.test(Petal.Length~Species,data=irisVirgVersi)
+irisTest
+@ 
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+  \frametitle{Programming with the results}
+  The output of t.test is a list that gets formatted for the screen using a "print" function
+<<ttest.prog>>=
+names(irisTest)
+@
+We can pull out individual pieces
+<<ttest.prog.ex>>=
+irisTest$estimate["mean in group virginica"]
+c(irisTest$statistic,irisTest$p.value)
+
+@ 
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Exercise: programming with results}
+Make a boxplot comparing petal length in versicolor and virginica
+irises.  Include the t-statistic and p-value from the t-test in the
+title of the plot.   
+@ 
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Exercise: use t-test in an apply call}
+Write a {\it wrapper} function for t.test, so that you can run it on
+every row of a matrix, using an apply function.
+
+@ 
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Alternatives}
+\framesubtitle{Wilcoxon/Mann-Whitney Rank Test}
+Using only ranks, this test is very closely connected to an ROC analysis.   A good choice when data is far from normally distributed.
+<<wilcox>>=
+wilcox.test(Petal.Length~Species,data=irisVirgVersi)
+@ 
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Alternatives}
+\framesubtitle{Permutation Tests}
+The null hypothesis reads, {\it there is no difference between means}, so we can force this to be the case in our own data, to get an individualized null distribution.  Simply mix up the species designations so that each {\it group} is really a mixture of petal lengths from both types. 
+<<permute>>=
+null.perm=function(dummy,irisData){
+irisData$Species=sample(irisData$Species)
+return(t.test(Petal.Length~Species,data=irisData)$statistic)
+}
+irisNull=sapply(1:1000,null.perm,irisData=irisVirgVersi)
+sum(abs(irisNull)>=abs(irisTest$statistic))/length(irisNull)
+@ 
+{\bf NB:  There is a tendency to over-estimate signficance with these methods.}
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{How NOT to lie with statistics}
+  \begin{itemize}
+    \item It is not legitimate to test a hypothesis that you developed
+      in exploratory analysis on the same data.   A certain amount of exploratory analysis will be necessary, but you should be fairly clear about the scientific hypotheses at the outset
+\item Consider any possible confounding variables at the design stage,
+  including the possibility of  systematic
+  measurement errors, deviations from random sampling, $\dots$
+
+  \item Use some sort of multiple test correction if you apply several tests\\
+    The simplest, and most conservative, is the Bonferroni correction, where you reduce the threshold of statistical significance from $\alpha=0.05$ to $\alpha/m$ where $m$ is the total number of tests.
+      \end{itemize}
+\end{frame}
+
+
+
+ \begin{frame}
+  \frametitle{Linear Regression: Conditions for valid inference} 
+  \begin{itemize}
+      \item[L]  when you plot the data, the relationship between predictor and response should be plausibly  {\bf L}inear.  If not consider transforming one or more variables, or using a different method
+\item[I]  individual observations should be {\bf I}ndependent of one another
+  
+ \item[N] errors should be approximately  {\bf N}ormally distributed
+   
+   \item[E] the variance of the errors should be  {\bf E}qual for all values of x
+
+    \end{itemize}
+  \end{frame}
+  
+\begin{frame}
+\frametitle{Linear Regression: Interpretation}  
+  The coefficient $\beta_i$ describes the average effect on the response variable $Y$, if the corresponding predictor $X_i$ is increased by 1 unit.
+\begin{itemize}
+  \item  $\beta<0$ indicates negative association, increases in $X$ are accompanied by decreases in $Y$
+  \item Changing units in the predictor, say from inches to centemeters, will {\bf decrease} $\beta$ by a factor of $0.254$ 
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Anscombe Data}
+  The anscombe data is perfect for this: 4 sets of X,Y variables, all simulated to have the same correlation, but with different relationships between X and Y. The first set is linearly related.
+<<anscombe>>=
+require(datasets)
+dim(anscombe)
+colnames(anscombe)
+@
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+  \frametitle{The Plot}
+<<anscombe1Plot,fig=T,include=F>>=
+plot(anscombe$x1,anscombe$y1,pch=16,cex=1.5,
+     cex.axis=1.5,cex.lab=1.5)
+abline(5,.5,lt=2)
+abline(1,.5,lt=2)
+@
+\begin{center}
+\includegraphics[width=0.4\textwidth]{Rstats3-anscombe1Plot.pdf}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{The  Analysis}
+  The first pair of variables
+<<anscombe1Fit>>=
+anscombeMod1=lm(y1~x1,data=anscombe)
+summary(anscombeMod1)
+confint(anscombeMod1)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Visualizing the model}
+<<anscombe1Plot-return,fig=T,include=F>>=
+plot(anscombe$x1,anscombe$y1,pch=16,cex=1.5,
+     cex.axis=1.5,cex.lab=1.5)
+abline(anscombeMod1$coefficients)
+@
+\begin{center}
+\includegraphics[width=0.4\textwidth]{Rstats3-anscombe1Plot-return.pdf}
+\end{center}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+  \frametitle{Assessing model fit}
+ The {\bf residuals} are the errors, or differences between predicted and observed responses, and are very important for assessing model fit and diagnosing problems.  This is how a residual plot should look.
+<<resid1Plot,fig=T,include=F>>=
+plot(anscombe$x1,anscombeMod1$residuals,pch=16,cex=1.5,
+     cex.axis=1.5,cex.lab=1.5)
+abline(h=0)
+@
+\begin{center}
+\includegraphics[width=0.4\textwidth]{Rstats3-resid1Plot.pdf}
+\end{center}
+\end{frame}
+
+
+
+ 
+\begin{frame}[fragile]
+  \frametitle{When the relationship is not linear}
+<<anscombe2Fit>>=
+anscombeMod2=lm(y2~x2,data=anscombe)
+summary(anscombeMod2)
+confint(anscombeMod2)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Visualizing the model}
+<<anscombe2Plot-return,fig=T,include=F>>=
+plot(anscombe$x2,anscombe$y2,pch=16,cex=1.5,
+     cex.axis=1.5,cex.lab=1.5)
+abline(anscombeMod2$coefficients)
+@
+\begin{center}
+\includegraphics[width=0.4\textwidth]{Rstats3-anscombe2Plot-return.pdf}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+ \frametitle{Assessing model fit}
+  This is not how a residual plot should look.
+<<resid2Plot,fig=T,include=F>>=
+plot(anscombe$x2,anscombeMod2$residuals,pch=16,cex=1.5,
+     cex.axis=1.5,cex.lab=1.5)
+abline(h=0)
+@
+
+\begin{center}
+\includegraphics[width=0.4\textwidth]{Rstats3-resid2Plot.pdf}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+ \frametitle{Looks quadratic so add $x_2^2$ as an additional predictor}
+<<anscombe2quadMod>>=
+anscombe2=data.frame(anscombe,"x2.2"=anscombe$x2^2)
+anscombeMod2.2=lm(y2~x2+x2.2,data=anscombe2)
+summary(anscombeMod2.2)
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+ \frametitle{Transforming  the model}
+<<anscombe2PlotTransform,fig=T,include=F>>=
+plot(-(anscombe$x2-11)^2+121,anscombe$y2,pch=16,cex=1.5,
+     cex.axis=1.5,cex.lab=1.5)
+@
+\begin{center}
+\includegraphics[width=0.4\textwidth]{Rstats3-anscombe2PlotTransform.pdf}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+ \frametitle{Residuals again}
+  Now residuals are all zero, up to round-off error
+<<resid2Plot-return,fig=T,include=F>>=
+plot(anscombe$x2,anscombeMod2.2$residuals,pch=16,cex=1.5,
+     cex.axis=1.5,cex.lab=1.5)
+abline(h=0)
+@
+
+\begin{center}
+\includegraphics[width=0.4\textwidth]{Rstats3-resid2Plot-return.pdf}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The t-test as a special case of linear regression}
+<<<ttest.lm,eval=T>>=
+ttest.lm=lm(Petal.Length~Species,data=irisVirgVersi)
+summary(ttest.lm)
+confint(ttest.lm)
+@ 
+\end{frame}
+  
+\begin{frame}[fragile]
+  \frametitle{And the t-test}
+  Compare mean petal length in setosa to that in versicolor:
+<<ttest.repeat>>=
+t.test(Petal.Length~Species,data=irisVirgVersi)
+@ 
+\end{frame}
+
+\begin{frame}
+  \frametitle{The interpretion is the same as well}
+  \begin{itemize}
+    \item  The regression coefficient $\beta_i$ describes the average effect on the response variable $Y$, if the corresponding predictor $X_i$ is increased by 1 unit.
+\item For the t-test, the regression coefficient is the difference in means, and by definition, going from species versicolor to species setosa is increasing the predictor by 1 unit
+\item so the regression coefficient in this case, the difference of means, describes the average effect on petal length that you get if you swap out iris species'
+    \end{itemize}
+  \end{frame}
+  
+  
+  \begin{frame}
+    \frametitle{Variations: loess}
+    {\bf lo}cal regr{\bf ess}ion is an exploratory technique for fitting a smooth curve to variables that may not have a linear relationship.  
+\begin{itemize}
+  \item Think of it as a mathematically sophisticated moving average
+    \begin{itemize}
+      \item divide the range of the predictor variable into bins
+        \item calculate the average response value in each bin
+          \item plot the predictor-response averages to see the trend of the data
+\item the smaller the bin, the more detail you can capture in the plot, and the more random errors affect your plot
+      \end{itemize}
+      \item there is a bandwidth variable in the loess function that, like bin size, controls the amount of smoothing
+  \end{itemize} 
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{How loess looks}
+
+<<loessRegPlot,fig=T,include=F>>=
+loessFit=loess(y2~x2,data=anscombe[order(anscombe$x2),])
+plot(y2~x2,data=anscombe,pch=16,cex=1.5,
+     cex.axis=1.5,cex.lab=1.5)
+lines(loessFit,col="blue",lwd=2)
+@
+\begin{center}
+\includegraphics[width=0.4\textwidth]{Rstats3-loessRegPlot.pdf}
+\end{center}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Some other useful tests in R}
+\begin{itemize}
+\item F-test (ANOVA, for comparing the means of 3 or more groups)
+ \item Proportion test
+  \item chi-squared  test
+  \item Fisher's test
+ \end{itemize}
+ \end{frame}
+  
+ 
+\begin{frame}[fragile]
+\frametitle{F-test}
+    Use full, 3-species iris data
+<<ftest>>=  
+    anova(lm(Petal.Length~Species,data=iris))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{The Hair-Eye color data}
+      The next few methods require tabled count data, for which we will use the HairEyeColor data from the {\tt datasets} package.   
+<<haireye>>=  
+require(datasets)
+HairEyeColor
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Hair-Eye color data continued}
+<<haireye2>>=       
+dimnames(HairEyeColor)
+maleHairEye=HairEyeColor[,,"Male"]; dim(maleHairEye)
+colnames(maleHairEye)
+rownames(maleHairEye) 
+@
+\end{frame}
+ 
+\begin{frame}[fragile]
+\frametitle{Proportion test}
+Test whether blue eyes are equally frequent for all hair colors
+<<proptest>>=    
+# x is number of blue eyed men in each hair color group
+x=maleHairEye[,"Blue"]
+# n is the total number of men in each hair color group
+n=apply(maleHairEye,1,sum)
+prop.test(x,n)
+@
+\end{frame}
+    
+\begin{frame}[fragile]
+  \frametitle{$\chi^2$ test}
+ Test whether there is an association between hair color (brown and blond only)  and eye color (brown and blue only)
+
+<<chisqtest>>=
+maleHairEyeBrBlBu=maleHairEye[c('Brown','Blond'),
+  c('Brown','Blue')]
+chisq.test(maleHairEyeBrBlBu)
+@
+\end{frame}
+
+  \begin{frame}[fragile]
+    Test whether there is an association between hair color and eye color
+\frametitle{Fisher's test}
+<<fishertest>>=   
+fisher.test(maleHairEyeBrBlBu)
+@
+\end{frame}
+
+
+  \begin{frame}
+    \frametitle{Logistic regression}
+    Logistic regression is applied when the response variable is binary, and the predictor is continuous. For convenience of notation, say the two possible values for the response are {\it success} and {\it failure} and  then what we end up modeling is the probability of success, as a function of the continuous predictors.  
+
+To be even more explicit, because probabilities are always between 0 and 1, we model some function $f(P($success$))$, for example we might use this model
+$$ \log(\frac{P_S}{(1-P_S)})\sim\beta_1X_1 + \cdots + \beta_nX_n +\epsilon$$ 
+Where the {\bf link} function $ \frac{P_S}{(1-P_S)}$, called the {\bf logit} transformation, is the log odds of success. 
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Data: airquality}
+   To demonstrate logistic regression, we will call ozone levels above 50 {\it bad air quality} and determine if temperature is associated with it.
+<<ozoneDat>>=
+airqual=airquality
+airqual$Ozone=as.numeric(airqual$Ozone>50)
+table(airqual$Ozone)
+@ 
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{The  regression}
+  We need to use the {\it generalized linear model} function {\tt glm()} to do logistic regression.  It works just like {\tt lm}, but takes additional arguments.  
+<<logReg>>=
+logitMod=glm(Ozone~Temp,data=airqual,family="binomial")
+summary(logitMod)
+@ 
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Visualizing the model}
+
+<<logRegPlot,fig=T,include=F>>=
+pred=predict(logitMod,airqual,type='response')
+ord=order(airqual$Temp)
+
+plot(Ozone~Temp,data=airqual[ord,],pch=16,cex=1.5,
+     cex.axis=1.5,cex.lab=1.5,ylab="Probability of High Ozone")
+lines(airqual$Temp[ord],pred[ord])
+abline(h=0)
+@
+\begin{center}
+\includegraphics[width=0.4\textwidth]{Rstats3-logRegPlot.pdf}
+\end{center}
+\end{frame}
+
+
+
+\end{document}

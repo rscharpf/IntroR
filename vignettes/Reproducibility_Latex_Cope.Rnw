@@ -1,0 +1,39 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\title{A little bit about \LaTeX{}}
+\author{Leslie Cope}
+
+\begin{document}
+\maketitle
+\section{Introduction}
+This is written in \LaTeX{}.
+\section{Using \LaTeX{}}
+\subsection{Typesetting mathematical expressions} i can easily stick in greek letters, $\alpha, \beta, \gamma$,
+or write an inequality, $x \leq y$.  It is really easy to set an equation off in its own line to draw attention to it.
+$$ e=mc^2$$
+and I can set up all kinds of fancy math expressions.
+$$\frac{\sum_{i=1}^n f(x_i)}{\pi r^2}$$
+\subsection{Type faces}
+I can write in {\it italics}, {\bf bold face}, {\tt typewriter face}.  I can stick in a {\Large really big} word or a {\footnotesize really small} word. It doesn't matter how many spaces       I stick between words.
+
+\subsection{Graphics}
+\label{graphics}
+Its easy to insert graphics into a document and the numbering is handled automatically.  Consider, for example, the scatterplot shown in Figure~\ref{scatterplot}. Likewise, references to section numbers are handled automatically, even if the numbering changes.  For example, this is Section~\ref{graphics}.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=3in]{EDA-figs/EDA-pressureplot2.pdf}
+\caption{\label{scatterplot} Here is a scatterplot}
+\end{center}
+\end{figure}
+\begin{figure}
+\begin{center}
+\includegraphics[width=3in]{EDA-figs/EDA-boxplot.pdf}
+\caption{\label{boxplot} Here is a boxplot}
+\end{center}
+\end{figure}
+
+\section{Conclusion}
+You should learn to use \LaTeX{}.
+\end{document}
