@@ -16,7 +16,6 @@
 \usenavigationsymbolstemplate{}
 %\RequirePackage{fancyvrb}
 %\RequirePackage{listings}
-
 \newcommand{\R}{\textsf{R}}
 \newcommand{\Rpackage}[1]{\textit{#1}}
 \newcommand{\Rfunction}[1]{\texttt{#1}}
