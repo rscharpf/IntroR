@@ -8,3 +8,5 @@
 *.out
 .auto*
 *.el
+!syllabus.tex
+!syllabus.pdf ## maintained by hand
