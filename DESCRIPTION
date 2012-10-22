@@ -6,6 +6,6 @@ Date: 2012-10-11
 Author: Leslie Cope, Elana Fertig, Luigi Marchionni, Robert Scharpf
 Maintainer: Rob Scharpf <rscharpf@jhsph.edu>
 Suggests: golubEsets, Biobase,SweaveListingUtils,
-          plotrix, lattice, distr
+          plotrix, lattice, distr, aspace, limma, affy
 Description: A series of vignettes for understanding data analysis using R
 License: GPL (>= 2)
