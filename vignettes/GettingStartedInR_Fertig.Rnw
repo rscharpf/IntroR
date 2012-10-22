@@ -1,0 +1,1188 @@
+\documentclass{beamer}
+\usetheme{Warsaw}
+
+\SweaveOpts{keep.source=TRUE}
+\SweaveOpts{eval=FALSE}
+
+\usepackage{graphicx, color, url, verbatim, fancybox, multicol}
+
+\AtBeginDocument{
+\DefineVerbatimEnvironment{Sinput}{Verbatim} {xleftmargin=0em,fontsize=
+\footnotesize}
+\DefineVerbatimEnvironment{Soutput}{Verbatim}{xleftmargin=0em,fontsize=
+\footnotesize}
+\DefineVerbatimEnvironment{Scode}{Verbatim}{xleftmargin=0em,fontsize=
+\footnotesize}
+}
+
+
+\newcommand*{\RLogo}{\includegraphics[width=1em]{GettingStartedFigs_Fertig/RLogo}}
+
+\newcommand{\R}{{\texttt{R}}}
+
+\newcommand{\T}{{\texttt{TRUE}}{}}
+\newcommand{\F}{{\texttt{FALSE}}{}}
+
+
+\title[Getting Started]{Getting Started in \R}
+\author[E. J. Fertig]{Elana J. Fertig \\ Johns Hopkins University \\ Department of Oncology \\ Division of Biostatistics and Bioinformatics}
+\date{Statistics and Data Analysis Using \R \\ 24 Oct 2012}
+
+\setcounter{tocdepth}{1}
+
+\begin{document}
+
+\begin{frame}[plain]
+\titlepage
+
+\vspace{-1em}
+
+\begin{center}
+\par {\footnotesize{Thanks to Leslie Cope, Luigi Marchionni, Roger Peng, and Robert Scharpf}}
+\end{center}
+\end{frame}
+
+\begin{frame}[plain]
+\frametitle{Lesson Overview: Getting Started in \R.}
+\tableofcontents
+\end{frame}
+
+\section{What is \R ?}
+
+\subsection{History of \R}
+
+\begin{frame}
+\frametitle{\R{ }is an outgrowth of the \texttt{S} language and environment}
+\begin{itemize}
+\item \texttt{S} developed as an internal statistical environment for Bell Labs in 1976 under the leadership of John Chambers.
+\item \texttt{S-PLUS} is still available as commercial software with features including a supporting graphical interface (GUI).
+\item \R started in the early 1990's as a project by Ross Ihaka and Robert Gentleman at the University of Auckland, New Zealand, intended to provide a statistical environment in their teaching lab.
+\item Most \texttt{S} code will run without modification in \R.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Current resources in \R}
+\begin{itemize}
+\item \R{ }was released as an open-source, free statistical software.
+\item CRAN provided a set of mirrors to host \R{ }software and packages in 1997.
+\item It was widely adopted in the bioinformatics community.
+\item Bioconductor project started in 2001 to provide \textbf{curated, peer reviewed, and documented} \R{ }packages for genomic analyses.
+\end{itemize}
+\end{frame}
+
+\subsection{Why use \R?}
+
+\begin{frame}
+\frametitle{Reasons to use \R}
+\begin{itemize}
+\item It's a free and powerful tool for statistical analyses.
+\item Open-source code, well curated and error checked through a wide and active user community.
+\item Supports completely reproducible statistical research.
+\item All functions in packages have documented help boards.
+\item State of the art genomics analysis tools are often released first in Bioconductor.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Words of caution}
+\begin{itemize}
+\item \R{ }has a steep learning curve.
+\item Error messages can be cryptic.
+\item Documentation is controlled by the code developer and may be difficult to follow.
+\item Input arguments to functions are not standardized.
+\item Responses in listserves can be condescending and snarky.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Resources}
+\begin{itemize}
+\item \textbf{GOOGLE IS YOUR FRIEND!!!!}
+\item RSeek is an \R-specific, Google powered search engine: \url{http://www.rseek.org/}
+\item Active community listserv to answer questions: \url{http://www.r-project.org/mail.html}
+\begin{itemize}
+\item \textbf{R-help:} discussion about problems and solutions using \R.
+\item \textbf{R-devel:} questions and discussion about code development.
+\item Take care to follow the posting guidelines for the listserves.
+\item \textbf{Do not be discouraged!!!}  A helpful response will usually come along. 
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\section{\R{ }Software}
+
+\subsection{Installation Instructions}
+
+\begin{frame}
+\frametitle{Installing \R: \url{http://cran.r-project.org/}}
+\includegraphics[width=\textwidth]{GettingStartedFigs_Fertig/RInstallation}
+\par \textbf{CAUTION: \R{ }is still under active development.}  \\ Download a version that supports the packages you want to use!
+\end{frame}
+
+\begin{frame}
+\frametitle{Installing RStudio: \url{http://rstudio.org/}}
+\includegraphics[width=\textwidth]{GettingStartedFigs_Fertig/RStudio}
+\par Not required for running \R, but includes a lot of nice features to simplify analyses and development.
+\end{frame}
+
+\subsection{Running Instructions}
+
+\begin{frame}
+\frametitle{Starting \R}
+  \begin{itemize}
+  \item[{\includegraphics[width=0.5in]{GettingStartedFigs_Fertig/RLogo}}]
+    If you {\bf DID NOT} install RStudio:
+    \begin{itemize}
+    \item
+      Windows:  Double-click on ``R''
+    \item
+      Mac OS X:  Click on ``R''
+    \item
+      Unix: Type ``R''
+    \end{itemize}
+  \item[{\includegraphics[width=0.5in]{GettingStartedFigs_Fertig/RStudioLogo}}]
+      If you {\bf DID} install RStudio:
+      \begin{itemize}
+      \item
+      Windows:  Double-click on ``RStudio''
+    \item
+      Mac OS X:  Click on ``RStudio''
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+
+\section{\R{ }as a calculator}
+
+ \subsection{Numeric operations}
+
+
+\begin{frame}[fragile]
+  \frametitle{Using the \R{ }terminal}
+ 
+\begin{block}{R Terminal}
+<<>>= 
+ 8+2
+ 8*2
+@ 
+\end{block}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Using the \R{ }terminal}
+  
+  
+  \begin{block}{R Terminal}
+<<>>= 
+ 8+2
+ 8*2
+@ 
+\end{block}
+
+\begin{itemize}
+\item \R{ }follows standard order of operations (e.g., $4 * 4 + 4 + 4 * 4 - 4 * 4 = 20$)
+\begin{enumerate}
+\item Terms inside parentheses
+\item Exponents and roots
+\item Multiplication and division
+\item Addition and subtraction
+\end{enumerate}
+\item Multiplication requires explicit use of the ``*''. E.g., write {\bf 3*(2+5)} rather than {\bf 3(2+5)}. 
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Arithmetic operators}
+\par More or less what you'd expect them to be \ldots
+\begin{description}
+\item[\texttt{x + y}] Adding \texttt{x} and \texttt{y}.
+\item[\texttt{x - y}] Subtracting \texttt{y} from \texttt{x}.
+\item[\texttt{x * y}] Multiplying \texttt{x} and \texttt{y} 
+\item[\texttt{x / y}] Dividing \texttt{x} and \texttt{y}.
+\item[\texttt{x \^{ } y}] Raising \texttt{x} to the \texttt{y}$^{\mbox{th}}$ power. 
+\item[\texttt{x \%\% y}] \texttt{x} mod \texttt{y}.
+\item[\texttt{x \%/\% y}] Remainder of \texttt{x} divided by \texttt{y}.
+\end{description}
+\end{frame}
+
+\begin{frame}
+\frametitle{Trigonometric functions and values}
+\begin{description}
+\item[pi] Value of $\pi$ in double precision.
+\item[\texttt{sin(x)}] Sine of x (in radians).
+\item[\texttt{cos(x)}] Cosine of x (in radians).
+\item[\texttt{tan(x)}] Tangent of x (in radians).
+\end{description}
+\end{frame}
+
+\begin{frame}
+\frametitle{Powers and logs}
+\begin{description}
+\item[\texttt{abs(x)}] Compute the absolute value of \texttt{x}.
+\item[\texttt{sqrt(x)}] Take the square root of \texttt{x}.
+\item[\texttt{exp(x)}] Raise \texttt{e} to the \texttt{x}$^{\mbox{th}}$ power.
+\item[\texttt{log(x)}] Computes the natural log (ln) of \texttt{x}.
+\item[\texttt{log2(x)}] Computes log base 2 of \texttt{x}.
+\item[\texttt{log10(x)}] Computes log base 10 of \texttt{x}.
+\item[\texttt{log(x, base=b)}] Computes log base \texttt{b} of \texttt{x}.
+\end{description}
+\end{frame}
+
+\subsection{Logical operations}
+
+\begin{frame}
+\frametitle{Logical comparisons}
+\begin{itemize}
+\item \R{ }reserves \T{ }and \F{ }as special logical values.
+\item \R{ }recognizes the abbreviations \texttt{T} and \texttt{F}.
+\item Basic comparisons include
+\begin{description}
+\item[\texttt{x == y}] \T{ }if \texttt{x} $=$ \texttt{y} and \F{ }otherwise \\ MUST use \textbf{two} equal signs, using only one will set \texttt{x} to the value of \texttt{y}.
+\item[\texttt{x != y}] \T{ }if \texttt{x} $\neq$ \texttt{y} and \F{ }otherwise.
+\item[\texttt{x > y}] \T{ }if \texttt{x} $>$ \texttt{y} and \F{ }otherwise.
+\item[\texttt{x >= y}] \T{ }if \texttt{x} $\ge$ \texttt{y} and \F{ }otherwise.
+\item[\texttt{x < y}] \T{ }if \texttt{x} $<$ \texttt{y} and \F{ }otherwise.
+\item[\texttt{x <= y}] \T{ }if \texttt{x} $\le$ \texttt{y} and \F{ }otherwise.
+\end{description}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Logical operators}
+\begin{description}
+\item[\texttt{!x}] ``Not x'' \\ \T{ }when \texttt{x} is \F, and \F{ }when \texttt{x} is \T.
+\item[\texttt{x \& y}] ``x and y'' \\ \T{ }when both \texttt{x} and \texttt{y} are \T, and \F{ }when either \texttt{x} or \texttt{y} is \F.
+\item[\texttt{x | y}] ``x or y'' \\ \T{ }when either \texttt{x} or \texttt{y} is \T, and \F{ }when both \texttt{x} and \texttt{y} is \F.
+\item[\texttt{xor(x, y)}] ``x xor y'' (exclusive or) \\ \T{ }when only one of \texttt{x} or \texttt{y} is \T, and \F{ } when both \texttt{x} and \texttt{y} are \T{ } or both are \F.
+\end{description}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Logical evaluation}
+\begin{description}
+\item[\texttt{ifelse(test, yes, no)}] Performs the command \texttt{yes} when \texttt{test} is \T{ } and \texttt{no} when \F{ }.
+\end{description}
+For example, \texttt{abs(x)} could also be computed with
+\begin{block}{R Terminal}
+<<>>=
+x = -2
+ifelse(x > 0, x, -x)
+x = 3
+ifelse(x > 0, x, -x)
+@
+\end{block}
+\end{frame}
+
+
+
+ \subsection{String operations}
+
+\begin{frame}[fragile]
+\frametitle{Strings (sets of characters)}
+\begin{itemize}
+\item Can represent sets of characters in \R{ }by enclosing in quotes.
+\item Single AND double quotes can be used interchangeably, but you must start and end with the same type.
+\end{itemize}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{Valid string representation}
+\begin{block}{R Terminal}
+<<>>=
+"string"
+'string'
+@
+\end{block}
+\column{0.5\textwidth}
+\emph{Invalid string representation}
+\begin{block}{R Terminal}
+<<>>=
+"string'
+'string"
+@
+\end{block}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Strings comparisons}
+\begin{itemize}
+\item Most logical comparisons can be applied to strings to arrange them in alphabetical order.
+\item Comparisons are case sensitive.
+\item Blank spaces will change results.
+\end{itemize}
+\begin{block}{R Terminal}
+<<>>=
+"aaa" < "aab"
+"aaa" > "aab"
+"aaa" == "aaa"
+"AAA" == "aaa"
+"aaa" == "aaa "
+"aaa" < "aaa "
+@
+\end{block}
+\end{frame}
+
+\subsection{Exercises}
+
+\begin{frame}[fragile]
+\frametitle{Exercises}
+\begin{enumerate}
+\item Compute the sin of $60^{\circ}$.  \textit{Hint: an angle $x$ in degrees can be converted to radians by $\frac{180}{\pi} x$.}
+\item Use the \texttt{ifelse} command to determine whether the angle $\frac{\pi}{4}$ is in the first quadrant. \textit{Hint: an angle $x$ is in the first quadrant when its $\sin(x)$ and $\cos(x)$ are both positive.}
+\item What happens when you apply arithmetic operations to logical values (e.g., \T+\T, \T+\F, \T*\T, \ldots)? What can you conclude about how logical values are stored?
+\item What happens when you add strings (e.g., \texttt{"a" + "b"})?
+\item What happens when you compare a numeric value to a string (e.g., \texttt{1 < "a"}, \texttt{1 < "1"}, \texttt{1=="1"}, \texttt{1=="1 "}, \ldots)?  What is happening to the numeric variable in this comparison?
+\end{enumerate}
+\end{frame}
+
+\section{The basics of \R}
+
+
+\subsection{\R{ }variables}
+
+\begin{frame}[fragile]
+\frametitle{Setting variables}
+\par Set the variables \texttt{x}, \texttt{y}, and \texttt{z} to the value 1.
+\begin{block}{R Terminal}
+<<>>=
+# single equal sign
+x = 1
+# assign value on right to variable on left
+y <- 1
+# assign value on left to variable on right
+1 -> z
+@
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Working with variables}
+\par Variables can be used in place of numbers or to store results.
+\begin{block}{R Terminal}
+<<>>=
+x <- pi/2
+y <- sin(x)
+z <- log(y)
+@
+\end{block}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Setting variables: vectors}
+\par Set the variables \texttt{x}, \texttt{y}, and \texttt{z} to vector values.
+\begin{block}{R Terminal}
+<<>>=
+# c() concatenates elements in a vector
+x = c(1, 2, 3)
+# assign value on right to variable on left
+y <- 1:3
+# assign value on left to variable on right
+seq(from=1, to=3, by=1) -> z
+@
+\end{block}
+\end{frame}
+
+
+\subsection{Subsetting vectors}
+
+\begin{frame}[fragile]
+  \frametitle{Square bracket notation}
+  \begin{center}
+Square brackets [ ] are used to indicate subvectors.
+\end{center}
+\begin{columns}
+\column{0.5\textwidth}
+To select elements of a vector
+\begin{block}{R Terminal}
+<<>>= 
+x=1:5
+# extracts first element
+x[1] 
+# extracts 1st and 3rd elements
+x[c(1,3)]
+# extracts 1st to 3rd elements
+x[1:3]
+@
+\end{block}
+\column{0.5\textwidth}
+To replace selected elements 
+\begin{block}{R Terminal}
+<<>>= 
+ x <- 1:5
+ # replace first element with 5
+ x[1] <- 5
+ # replace second and 
+ # third elements
+ x[2:3]<-c(9,20) 
+@
+\end{block}
+\end{columns}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Use logical values specific elements}
+Logicals can be used to select specific values. 
+\begin{columns}
+\column{0.5\textwidth}
+\begin{block}{R Terminal}
+<<>>= 
+age=c(35,47,24,32,51)
+select <- c(T, F, T, F, T)
+age[select]
+@ 
+\end{block}
+\column{0.5\textwidth}
+\begin{block}{R Terminal}
+<<>>= 
+age=c(35,47,24,32,51)
+sex=c('M','M','F','M','F')
+age[sex=="F"]
+@ 
+\end{block}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Referencing vector names}
+We can also name vector elements and select elements by name
+\begin{block}{R Terminal}
+<<>>= 
+x <- 1:10
+names(x)=letters[1:10]
+names(x)
+x[2]
+x["b"]
+@ 
+\end{block}
+\textbf{Why is it good practice to use names rather than
+indexes?}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Referencing vector names}
+We can also name vector elements and select elements by name
+\begin{block}{R Terminal}
+<<>>= 
+x <- 1:10
+names(x)=letters[1:10]
+names(x)
+x[2]
+x["b"]
+@ 
+\end{block}
+\textbf{It is good practice to use names rather than
+indexes.}
+\begin{itemize}
+\item Makes the code easier to follow.
+\item Avoids indexing errors.
+\item Enables adaptation to new situations.
+\end{itemize}
+\end{frame}
+
+
+
+\subsection{Functions}
+
+\begin{frame}
+\frametitle{Useful functions in \R}
+\begin{itemize}
+\item +, -, *, /
+\item sin, cos, tan
+\item exp, log, log2, log10
+\item \ldots
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Function syntax}
+All functions in \R{ }are called the same way - you type the name of the
+function, followed (without intervening spaces) by
+parentheses containing any arguments.  
+\begin{block}{R Terminal}
+<<>>= 
+log10(100)
+@ 
+\end{block}
+In fact, 5*3 is just a convenient shorthand, all such functions can be
+called using parentheses!
+\begin{block}{R Terminal}
+<<>>= 
+"*"(5,3)
+"+"(5,3)
+">"(5,3)
+@ 
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Functions for vectors}
+\par Most arithmetic functions are applied to each element of the vector
+\begin{block}{R Terminal}
+<<>>=
+x <- 1:3
+y <- 2:4
+x + y
+x * y
+log10(x)
+exp(y)
+@
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Functions specifically for vectors}
+  Some functions only make sense on vectors (or even more complicated data structures)
+  \begin{block}{R Terminal}
+<<>>= 
+ x <- c(7,3,12,1,8,3)
+ y <- c("dog", "cat", "bird")
+ length(x) # number of elements in x
+ sort(x) # numerical vectors are sorted in numerical order
+ sort(y) # character vectors are sorted in alphabetical order
+ max(x) # maximum value in x
+ max(y) # character vectors in alphabetical order
+ sum(x) # adds up all the values
+ prod(x) # multiples all the values
+ mean(x) # the average is sum(x) / length(x)
+@
+\end{block}
+\end{frame}
+
+
+
+
+\subsection{Getting help}
+
+\begin{frame}[fragile]
+  \frametitle{Getting Help}
+There is an extensive built in help system, which can be accessed from
+the tool bar or from the command line.
+Early on it may be easiest to open up the whole help system in .html
+format and look through the table of contents for your general
+topic.  
+\begin{block}{R Terminal}
+<<>>= 
+ help.start() 
+@ 
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Searching for help}
+You can also search help files for a key word using
+the command  
+\begin{block}{R Terminal}
+<<>>=  
+ help.search("sort")
+ ??sort
+@
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Getting help on specific functions}
+ When you know (or can guess) the function name you can look the
+ syntax up directly, by typing,
+for example, 
+\begin{block}{R Terminal}
+<<>>= 
+ help(sort) 
+ ?sort
+@
+\end{block}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{The anatomy of the \R{ }help file}
+There are several sections to an \R{ }help file
+\begin{description}
+  \item[Description] briefly describes what the function does 
+  \item[Usage] shows how the function is invoked, including all
+      standard arguments
+    \item[Arguments] list all inputs with a brief description of each
+        \item[Details] further details, if warranted
+          \item[Value] describes the output
+            \item[See Also] lists related functions that you might
+              have meant to look up instead
+              \item[Examples] can cut and paste into R to
+                demonstrate the function.
+    \end{description}
+\end{frame}
+
+\subsection{Workspace}
+
+\begin{frame}[fragile]
+   \frametitle{Workspace}  This is the environment you will be
+   most familiar with, home for all the variables you define.  
+   \begin{itemize}
+     \item Built in functions seem to work automatically, without
+       cluttering your work space.  
+\item As we saw in the help files, half the functions in \R{ }define a
+  variable named {\bf x} in their internal environments. These copies
+  of {\bf x} in no way interfere with your own version of {\bf x}.
+\end{itemize} 
+Important functions for managing your workspace include 
+{\bf ls(), rm(), save.image()}.
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Using \texttt{ls()} to see workspace contents}
+\begin{block}{R Terminal}
+<<>>=
+ls()
+ls(pattern='x')
+xx <- 1:5
+ls(pattern='x')
+@
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Deleting variables with \texttt{rm()}}
+\begin{block}{R Terminal}
+<<>>=
+# remove the single variable xx
+ls()
+rm('xx')
+ls()
+
+# remove a list of variables
+x <- 1; y <- 2
+ls()
+rm('x','y')
+ls()
+
+# remove all variables that contain the name x
+x <- 1; xx <- 1:2; xxx <- 1:3
+ls()
+rm(list=ls(pattern='x'))
+ls()
+@
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Saving  and loading variables with \texttt{save()} and \texttt{load()}}
+\begin{block}{R Terminal}
+<<>>=
+# save the variable xx
+xx <- 1:2
+xx
+save('xx', file='xx.Rda')
+rm('xx')
+ls()
+load('xx.Rda')
+ls()
+@
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Saving multiple variables}
+\begin{block}{R Terminal}
+<<>>=
+# save the variables xx and y
+xx <-1:2; y <- 3:5
+xx
+save('xx','y', file='xxAndY.Rda')
+rm('xx','y')
+ls()
+load('xxAndY.Rda')
+ls()
+
+# saving all variables in the workspace
+save(list=ls(), file='AllVar.Rda')
+@
+\end{block}
+\end{frame}
+
+\subsection{History}
+
+\begin{frame}
+\frametitle{Extracting previous commands from the R history}
+\begin{itemize}
+\item Commands from your current session are stored in the ``history''.
+\item The \texttt{history} function will get all the previous commands.
+\begin{itemize}
+\item Will default to the previous 25 commands unless the input variable \texttt{max.show} is modified (e.g., \texttt{history(max.show=10)}).
+\item Can select commands containing a specific phrase with the \texttt{pattern} variable (e.g., \texttt{history(pattern="save")}).
+\end{itemize}
+\item Type the \texttt{up} arrow in your workspace to get the previous command.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Saving and loading the R history}
+Save the history of all commands run in this session.
+\begin{block}{R Terminal}
+<<echo=T, eval=F>>=
+savehistory(file='SavedHistory.Rhistory')
+@
+\end{block}
+Load in files that were run from a previous history.
+\begin{block}{R Terminal}
+<<>>=
+loadhistory(file='SavedHistory.Rhistory')
+@ 
+\end{block}
+
+\end{frame}
+
+\subsection{Working directory}
+
+\begin{frame}
+\frametitle{Working directory}
+  
+  \begin{itemize}
+  \item Directory on your computer on which you are working.
+  \item Default location from which all files will be loaded and to which all files will be saved.
+  \item Can be different from the starting directory which will initiate the workspace from any \texttt{.RData} and \texttt{.Rhistory} files.
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Get and set working directory: \texttt{getwd} and \texttt{setwd} }
+\begin{columns}
+\column{0.5\textwidth}
+Find the directory where you are working on you computer using:
+\begin{block}{R Terminal}
+<<echo=T, eval=F>>=
+getwd()
+@
+\end{block}
+\column{0.5\textwidth}
+Change the directory where you are working using:
+\begin{block}{R Terminal}
+<<setWD, echo=TRUE, eval=FALSE>>=
+setwd("~/somewhereOnMyMac/")
+@ 
+\end{block}
+\end{columns}
+
+\end{frame}
+
+\subsection{Quitting \R}
+
+\begin{frame}[fragile]
+\frametitle{Quitting \R}
+\begin{block}{R Terminal}
+<<>>=
+q()
+@
+\end{block}
+R will ask ``\texttt{Save workspace image? [y/n/c]:}''
+\begin{description}
+\item[y] Will save a file \texttt{.RData} and \texttt{.Rhistory} with the commands from your workspace into your working directory before exiting.  \R{ }will automatically restore your workspace from these files if you open \R{ }from this directory. 
+\item [n] Will exit \R{ }without saving any files.
+\item [c] Will cancel the quit command.
+\end{description}
+\begin{center}
+\textbf{You are better off saving files with objects before quitting!}
+\end{center}
+\end{frame}
+
+\subsection{Exercises}
+
+\begin{frame}
+\frametitle{Exercises}
+\begin{enumerate}
+\item Using the help for the function \texttt{seq}, generate the sequence of even numbers from 2 to 10.
+\item Compute $log_{10}$ for a vector containing each of the numbers in a vector $x = \left \{ 10^{-5}, 10^{-4}, \ldots, 10^{4}, 10^{5}\right \}$. Use these results to select only values of $x$ that are non-negative powers of $10$.  Try to define $x$ using a sequence instead of typing in each entry.
+\item Change your working directory to a path in your \texttt{Documents} folder and save the results from your workspace there.
+\item Save the results in your workspace and your history to a path in your \texttt{Documents} folder \emph{without} using \texttt{getwd}.
+\end{enumerate}
+\end{frame}
+
+\section{``Organization'' of \R}
+
+\begin{frame}
+\frametitle{Lexical scope (Without technical details)}
+    Part of keeping things simple for the user means that:
+    \begin{itemize}
+ \item if you type 
+{\tt abcde(1) }
+\R{ }looks for a function named {\tt abcde} 
+   \item but if you type 
+{\tt abcde[1] }
+\R{ }looks for a vector named {\tt abcde} 
+\end{itemize}
+Lexical scope refers to the \R's rules for managing its lexicon of
+built-in and user-defined variable names.  
+\end{frame}
+
+\begin{frame}
+\frametitle{Environments} 
+\par The {\bf environment} is the basic
+  unit of organization inside of \R.  It can be hard to give a crisp
+  definition, but think of it as a virtual container for a set of
+  variables.  
+  \begin{itemize}
+    \item \R{ } sets up a temporary environment every time it calls a function like {\tt sort(x)}.  
+  \begin{enumerate}
+    \item  {\tt x} is passed into the function
+  environment and saved there. 
+  \item The sorting takes place inside that container.
+  \item The answer is passed back.  
+  \item \R{ }clears the temporary environment. 
+    \end{enumerate}
+  \item Each \R{ }package that has its own
+    environment containing its functions and datasets. 
+    \end{itemize}
+\end{frame}
+
+
+\subsection{\R{ }packages}
+
+\begin{frame}
+\frametitle{\R{ }packages}
+\R{ }packages are user-developed sets of software that extend the basic statistical framework.  They can contain
+\begin{itemize}
+\item Functions.
+\item Data.
+\item Help menus and vignettes.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{CRAN}
+\begin{itemize}
+\item CRAN is a repository of user-contributed \R{ }packages. 
+\item Currently, contains $4114$ packages.  
+\item The \texttt{install.packages} command will install R packages from CRAN.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Finding CRAN packages}
+\begin{itemize}
+\item By date of publication: \url{http://cran.r-project.org/web/packages/available_packages_by_date.html}
+\item By package name: \url{http://cran.r-project.org/web/packages/available_packages_by_name.html}
+\item By function: \url{http://www.rseek.org/} or \url{http://www.google.com}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Finding a package to compute trig functions in degrees}
+\includegraphics[width=\textwidth]{GettingStartedFigs_Fertig/FindingRPackages}
+\end{frame}
+
+\begin{frame}
+\frametitle{Finding a package to compute trig functions in degrees}
+\includegraphics[width=\textwidth]{GettingStartedFigs_Fertig/FindingAPackage2}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{The \texttt{aspace} package for trig functions in degrees}
+\par Installation.
+\begin{block}{R Terminal}
+<<>>=
+install.packages('aspace')
+@
+\end{block}
+\par Loading an using the functions.
+\begin{block}{R Terminal}
+<<>>=
+library('aspace')
+sin_d(60)
+@
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+      \frametitle{Search path}  
+      During an \R{ }session, you can see all the loaded package and workspace
+      environments. Because function environments only last while the
+      function is being executed, you won't see them.  
+<<>>= 
+search()
+@ 
+\begin{itemize}
+\item Your workspace is listed in slot [1] as {\tt ".GlobalEnv"}.
+\item The order is important!  When you call a function, \R{ }goes looking through its environments {\it in order} for that name.
+So if you define your own function named {\bf plot} it will 'mask' the
+built in version that \R{ }stores further up in the search path.  
+\end{itemize}
+
+\end{frame}
+
+\subsection{Bioconductor packages}
+
+\begin{frame}
+\frametitle{Bioconductor}
+\begin{itemize}
+\item Set of R packages for bioinformatics.
+\item Package functions, help menus, and vignettes undergo strict peer review.
+\item Authors are required to maintain packages to be included in Bioconductor.
+\item Available from \url{http://www.bioconductor.org/}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Installing Bioconductor packages}
+\begin{itemize}
+\item Available for the Bioconductor repository.
+\item For example, the \texttt{limma} package is commonly used for differential expression in microarrays
+\end{itemize}
+\begin{block}{R Terminal}
+<<>>=
+source("http://bioconductor.org/biocLite.R")
+biocLite("limma")
+@
+\end{block}
+\end{frame}
+
+
+\subsection{Exercises}
+
+\begin{frame}[fragile]
+\frametitle{Exercises}
+\begin{enumerate}
+\item Notice that the \texttt{seq} function has input arguments \texttt{from} and \texttt{to}.  Can you explain the difference in the two \texttt{seq} commands when you run the following?
+\begin{block}{R Terminal}
+<<>>=
+from <- 1
+to <- 10
+seq()
+seq(from = from, to = to)
+@
+\end{block}
+\item Can you find and install an \R{ }package used to RMA normalize Affymetrix microarrays?  Do you think that package would be on CRAN or Bioconductor?
+\end{enumerate}
+\end{frame}
+
+\section{Using RStudio}
+
+\begin{frame}
+\frametitle{RStudio}
+\includegraphics[width=\textwidth]{GettingStartedFigs_Fertig/RStudio}
+\end{frame}
+
+\begin{frame}
+\frametitle{Why RStudio}
+\begin{itemize}
+\item Free IDE for \R{ }on Windows, Mac, and Linux.
+\item Enables implementation of \R{ }commands with point and click, then translated into \R{ }code.
+\item Highlights \R{ }code as you develop and includes suggestions for functions from the \R{ }environment.
+\item Nice visualization of graphics and tables.
+\end{itemize}
+\end{frame}
+
+\subsection{Useful Tricks}
+
+\begin{frame}
+\frametitle{Autocomplete with \texttt{tab}}
+\par If you type \texttt{tab} RStudio will suggest functions, variable names, file names, etc.  For example
+\begin{itemize}
+\item \texttt{sor}\textcolor{blue}{tab}
+\item \texttt{setwd("$\sim$/Docu}\textcolor{blue}{tab}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Creating \R{ }scripts}
+\includegraphics[width=\textwidth]{GettingStartedFigs_Fertig/CreatingScript}
+\end{frame}
+
+\begin{frame}
+\frametitle{Tricks for scripts in RStudio}
+\begin{itemize}
+\item Can copy and paste commands from the console into the \R{ }script.
+\item The option \includegraphics[width=0.5in]{GettingStartedFigs_Fertig/ToSource} copies commands from the console into the \R{ }script.
+\item On the line \includegraphics[width=1in]{GettingStartedFigs_Fertig/Run}, \texttt{run} will run a single line of the script (also done with command-enter on a Mac) and \texttt{source} will run the entire script.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\R{ }studio panels}
+\begin{itemize}
+\item Screencast introduces features of RStudio.
+\item Play around with it to find a lot of nice tricks!
+\end{itemize}
+\includegraphics[width=\textwidth]{GettingStartedFigs_Fertig/RStudio}
+\end{frame}
+
+\section{Good practices for \R{ }and RStudio}
+
+
+\begin{frame}
+\frametitle{The \R{ }History is useful but \ldots}
+\par \textbf{Why is the history insufficient to reproduce an analysis?}
+\end{frame}
+
+\begin{frame}
+\frametitle{The \R{ }History is useful but \ldots}
+\begin{itemize}
+\item May miss intermediate commands changing results.
+\item May not be organized or cleanest code.
+\item Not documented documented.
+\item Difficult for other users to follow (or for you to remember when you come back to it later on).
+\end{itemize}
+\end{frame}
+
+\subsection{R scripts}
+
+\begin{frame}
+\frametitle{Why use scripts?}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{Challenges with \R{ }history}
+\begin{itemize}
+\item May miss intermediate commands changing results.
+\item May not be organized or cleanest code.
+\item Not documented documented.
+\item Difficult for other users to follow (or for you to remember when you come back to it later on).
+\end{itemize}
+\column{0.5\textwidth}
+\textbf{Solutions with \R{ }scripts}
+\begin{itemize}
+\item Capture full workflow of the analysis.
+\item Can reformat once you have working code.
+\item Add notes after the \# symbol.
+\item A text document that you can easily share or include as a supplement in publications for reproducible analyses.
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}
+\frametitle{Developing \R{ }scripts WITHOUT RStudio}
+\begin{itemize}
+\item Can be run using the \texttt{source} command.
+\item A text file ending in the extension \texttt{.R} containing \R{ }.
+\item Must be written in a text editor that does not add additional encoding.  NEVER use word to create an \R{ }script.
+\item Suggested Applications for writing an R script
+\begin{itemize}
+\item Dropdown menu in R application (not terminal)
+\item Dropdown menu in RStudio
+\item Emacs and appropriate versions of emacs for Window or Mac (e.g., Aquamacs).
+\item Xcode (Mac)
+\item Notepad++ (Windows)
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Best practice with scripts}
+\begin{itemize}
+\item Include all commands, so that the analysis can be completely reproduced from start to finish.
+\item Use descriptive and informative names for variables.
+\item You can never comment your code enough!!!! It makes it easier for you to share and to remember what you did down the road.
+\end{itemize}
+\end{frame}
+
+\subsection{Organizational structure}
+
+\begin{frame}
+\frametitle{Directory structure} 
+Organize your work so that the data, code, and results for each project are bundled together.  
+\begin{itemize}
+  \item Establish a simple organizational structure, so you can keep track of data files, code files, and results.
+    \item In addition to plots, and tables that you may have saved, results would include the file containing the workspace saved with \texttt{save}.
+      \item When opening an R session for a continuing project, load up saved objects and start from there.
+      \item Date codes and results to easily recover previous results.
+      \item Automated organizational resources exist (e.g., ProjectTemplate \url{http://projecttemplate.net/})
+        \end{itemize}
+  \end{frame}
+
+\subsection{Other notes}
+
+\begin{frame}
+\frametitle{Error messages are your friend}
+\begin{itemize}
+\item No matter how good you get, you will always come across error messages!!!!
+\item Error messages can provide a useful clue that you are telling the computer to do something you didn't mean.
+\item If you can't figure out what they are saying, error messages can often be clarified with a quick search on google.
+\item Check your work carefully!  The most dangerous mistakes are the ones not caught by error messages.
+\end{itemize}
+\end{frame}
+
+\section{References and Resources}
+
+\begin{frame}
+\frametitle{Online Resources}
+\begin{itemize}
+\item Short list of commonly used R commands. \url{http://cran.r-project.org/doc/contrib/Short-refcard.pdf}
+\item Comprehensive conversion guide between MATLAB and \R{ }developed by D.~Hiebeler at University of Maine.  Also useful for \R{ }novices used to standard programming commands. \url{http://www.math.umaine.edu/~hiebeler/comp/matlabR.html}
+\item Discussion of statistical examples in both SAS and \R{ } \url{http://sas-and-r.blogspot.com/}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+
+\frametitle{Useful Books}
+
+
+  \begin{multicols}{2}
+    \tiny{
+    	
+	\begin{thebibliography}{}
+	
+	\bibitem[All]{AllRef}
+	Complete list at
+	\newblock \url{http://www.r-project.org/doc/bib/R-books.html}
+
+       \bibitem[Chambers, 2008]{Chambers2008}
+         J.M.~Chambers
+         \newblock{\em Software for Data Analysis: Programming with \R{}}
+         
+            \bibitem[Dalgaard, 2002]{Dalgaard2002}
+     P.~Dalgaard
+     \newblock {\em Introductory Statistics with \R{}}
+     \newblock Springer, 2002.
+         
+       \bibitem[Gentleman, 2009]{Gentleman2009}
+         R.~Gentleman
+         \newblock{\em \R{} Programming for Bioinformatics}
+         \newblock CRC Press, 2009.
+         
+              \bibitem[Hastie, 2003]{Hastie2003}
+       T.~Hastie, R.~Tibshirani, and J.~Friedman
+       \newblock{\em The Elements of Statistical Learning: Data Mining,
+         Inference, and Prediction}
+       \newblock Springer, 2003.
+         
+      \bibitem[Murrell, 2006]{Murrell2006}
+     P.~Murrell
+     \newblock {\em \R{} Graphics}
+     \newblock Chapman \& Hall/CRC, 2006. 
+     
+            \bibitem[Pinheiro \& Bates, 2000]{Pinheiro2000}
+     Pinheiro \& Bates.
+     \newblock {\em Mixed-Effects Models in S and S-PLUS}
+     \newblock Springer, 2000.
+
+   \bibitem[Sarkar, 2008]{Sarkar2008}
+     D.~Sarkar
+     \newblock{\em Lattice: {M}ultivariate Data Visualization with \R{}}
+     \newblock Springer-Verlag, 2008.   
+
+       \bibitem[Venables \& Ripley, 2000]{Venables2000}
+     Venables \& Ripley.
+     \newblock {\em S Programming}
+     \newblock Springer, 2000.
+     
+     \bibitem[Venables \& Ripley, 2002]{Venables2002}
+     Venables \& Ripley.
+     \newblock {\em Modern Applied Statistics with S}
+     \newblock Springer, 2002.
+
+     \bibitem[Wickham, 2009]{Wickham2009}
+       H.~Wickham
+       \newblock {\em ggplot2: elegant graphics for data analysis}
+       \newblock Springer, 2009.
+
+  
+\end{thebibliography}
+}
+\end{multicols}
+
+\end{frame}
+
+\end{document}
