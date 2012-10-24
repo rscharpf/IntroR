@@ -16,7 +16,7 @@
 }
 
 
-\newcommand*{\RLogo}{\includegraphics[width=1em]{GettingStartedFigs_Fertig/RLogo}}
+\newcommand*{\RLogo}{\includegraphics[width=1em]{GettigStartedFigs_Fertig/RLogo}}
 
 \newcommand{\R}{{\texttt{R}}}
 
@@ -56,7 +56,7 @@
 \begin{itemize}
 \item \texttt{S} developed as an internal statistical environment for Bell Labs in 1976 under the leadership of John Chambers.
 \item \texttt{S-PLUS} is still available as commercial software with features including a supporting graphical interface (GUI).
-\item \R started in the early 1990's as a project by Ross Ihaka and Robert Gentleman at the University of Auckland, New Zealand, intended to provide a statistical environment in their teaching lab.
+\item \R{ }started in the early 1990's as a project by Ross Ihaka and Robert Gentleman at the University of Auckland, New Zealand, intended to provide a statistical environment in their teaching lab.
 \item Most \texttt{S} code will run without modification in \R.
 \end{itemize}
 \end{frame}
@@ -116,13 +116,13 @@
 
 \begin{frame}
 \frametitle{Installing \R: \url{http://cran.r-project.org/}}
-\includegraphics[width=\textwidth]{GettingStartedFigs_Fertig/RInstallation}
+\includegraphics[width=\textwidth]{GettigStartedFigs_Fertig/RInstallation}
 \par \textbf{CAUTION: \R{ }is still under active development.}  \\ Download a version that supports the packages you want to use!
 \end{frame}
 
 \begin{frame}
 \frametitle{Installing RStudio: \url{http://rstudio.org/}}
-\includegraphics[width=\textwidth]{GettingStartedFigs_Fertig/RStudio}
+\includegraphics[width=\textwidth]{GettigStartedFigs_Fertig/RStudio}
 \par Not required for running \R, but includes a lot of nice features to simplify analyses and development.
 \end{frame}
 
@@ -131,7 +131,7 @@
 \begin{frame}
 \frametitle{Starting \R}
   \begin{itemize}
-  \item[{\includegraphics[width=0.5in]{GettingStartedFigs_Fertig/RLogo}}]
+  \item[{\includegraphics[width=0.5in]{GettigStartedFigs_Fertig/RLogo}}]
     If you {\bf DID NOT} install RStudio:
     \begin{itemize}
     \item
@@ -141,7 +141,7 @@
     \item
       Unix: Type ``R''
     \end{itemize}
-  \item[{\includegraphics[width=0.5in]{GettingStartedFigs_Fertig/RStudioLogo}}]
+  \item[{\includegraphics[width=0.5in]{GettigStartedFigs_Fertig/RStudioLogo}}]
       If you {\bf DID} install RStudio:
       \begin{itemize}
       \item
@@ -203,7 +203,7 @@
 \item[\texttt{x / y}] Dividing \texttt{x} and \texttt{y}.
 \item[\texttt{x \^{ } y}] Raising \texttt{x} to the \texttt{y}$^{\mbox{th}}$ power. 
 \item[\texttt{x \%\% y}] \texttt{x} mod \texttt{y}.
-\item[\texttt{x \%/\% y}] Remainder of \texttt{x} divided by \texttt{y}.
+\item[\texttt{x \%/\% y}] Integer division of \texttt{y} into \texttt{x}.
 \end{description}
 \end{frame}
 
@@ -871,12 +871,12 @@ built-in and user-defined variable names.
 
 \begin{frame}
 \frametitle{Finding a package to compute trig functions in degrees}
-\includegraphics[width=\textwidth]{GettingStartedFigs_Fertig/FindingRPackages}
+\includegraphics[width=\textwidth]{GettigStartedFigs_Fertig/FindingRPackages}
 \end{frame}
 
 \begin{frame}
 \frametitle{Finding a package to compute trig functions in degrees}
-\includegraphics[width=\textwidth]{GettingStartedFigs_Fertig/FindingAPackage2}
+\includegraphics[width=\textwidth]{GettigStartedFigs_Fertig/FindingAPackage2}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -962,7 +962,7 @@ seq(from = from, to = to)
 
 \begin{frame}
 \frametitle{RStudio}
-\includegraphics[width=\textwidth]{GettingStartedFigs_Fertig/RStudio}
+\includegraphics[width=\textwidth]{GettigStartedFigs_Fertig/RStudio}
 \end{frame}
 
 \begin{frame}
@@ -988,15 +988,15 @@ seq(from = from, to = to)
 
 \begin{frame}
 \frametitle{Creating \R{ }scripts}
-\includegraphics[width=\textwidth]{GettingStartedFigs_Fertig/CreatingScript}
+\includegraphics[width=\textwidth]{GettigStartedFigs_Fertig/CreatingScript}
 \end{frame}
 
 \begin{frame}
 \frametitle{Tricks for scripts in RStudio}
 \begin{itemize}
 \item Can copy and paste commands from the console into the \R{ }script.
-\item The option \includegraphics[width=0.5in]{GettingStartedFigs_Fertig/ToSource} copies commands from the console into the \R{ }script.
-\item On the line \includegraphics[width=1in]{GettingStartedFigs_Fertig/Run}, \texttt{run} will run a single line of the script (also done with command-enter on a Mac) and \texttt{source} will run the entire script.
+\item The option \includegraphics[width=0.5in]{GettigStartedFigs_Fertig/ToSource} copies commands from the console into the \R{ }script.
+\item On the line \includegraphics[width=1in]{GettigStartedFigs_Fertig/Run}, \texttt{run} will run a single line of the script (also done with command-enter on a Mac) and \texttt{source} will run the entire script.
 \end{itemize}
 \end{frame}
 
@@ -1006,7 +1006,7 @@ seq(from = from, to = to)
 \item Screencast introduces features of RStudio.
 \item Play around with it to find a lot of nice tricks!
 \end{itemize}
-\includegraphics[width=\textwidth]{GettingStartedFigs_Fertig/RStudio}
+\includegraphics[width=\textwidth]{GettigStartedFigs_Fertig/RStudio}
 \end{frame}
 
 \section{Good practices for \R{ }and RStudio}
