@@ -1,0 +1,952 @@
+\documentclass{beamer}
+\usetheme{PaloAlto}
+
+\SweaveOpts{keep.source=TRUE}
+\SweaveOpts{eval=FALSE}
+
+\usepackage{graphicx, color, url, verbatim, multicol}
+
+\AtBeginDocument{
+\DefineVerbatimEnvironment{Sinput}{Verbatim} {xleftmargin=0em,fontsize=
+\footnotesize}
+\DefineVerbatimEnvironment{Soutput}{Verbatim}{xleftmargin=0em,fontsize=
+\footnotesize}
+\DefineVerbatimEnvironment{Scode}{Verbatim}{xleftmargin=0em,fontsize=
+\footnotesize}
+}
+
+
+\newcommand{\T}{{\texttt{TRUE}}{}}
+\newcommand{\F}{{\texttt{FALSE}}{}}
+\newcommand{\R}{\textsf{R}}
+
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title[Manipulating Data]{Making Calculations and Manipulating Data}
+\author[E. J. Fertig]{Elana J. Fertig \\ Johns Hopkins University \\ Department of Oncology, Division of Biostatistics and Bioinformatics}
+\date{Statistics and Data Analysis Using R \\ 24 Oct 2012 \\ Thanks to Leslie Cope, Luigi Marchionni, Roger Peng, and Robert Scharpf}
+
+\setcounter{tocdepth}{1}
+
+\begin{document}
+
+\begin{frame}[plain]
+\titlepage
+\end{frame}
+
+\begin{frame}[plain]
+\frametitle{Lesson Overview: Making Calculations and Manipulating Data.}
+\tableofcontents
+\end{frame}
+
+\section{Objects}
+
+\begin{frame}
+\frametitle{What is an object? Roughly \ldots}
+\begin{itemize}
+\item A type of a variable
+\item Examples from the previous class include
+\begin{itemize}
+\item numeric
+\item logical
+\item string
+\item vector
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{How does \R{ }handle objects?}
+\begin{itemize}
+\item Each object is stored in memory in a different way
+\item \R{ }functions will interact with each type differently
+\item To learn more, look up ``Object oriented programming'' or S3/S4 for an R specific viewpoint.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Attributes}
+\R{ }objects can have attributes
+\begin{itemize}
+\item
+names, dimnames
+\item
+dimensions (e.g. matrices, arrays)
+\item
+class
+\item
+length
+\item
+other user-defined attributes/metadata
+\end{itemize}
+Attributes of an object can be accessed using the \code{attributes()}
+function.
+\end{frame}
+
+\begin{frame}{``Atomic'' classes of objects}
+R has five basic or ``atomic'' classes of objects:
+\begin{itemize}
+\item
+character
+\item
+numeric (real numbers)
+\item
+integer
+\item
+complex
+\item
+logical  (True/False)
+\end{itemize}
+The most basic object is a vector
+\begin{itemize}
+\item
+A vector can only contain objects of the same class
+\item
+BUT: The one exception is a \textit{list}, which is represented as a
+vector but can contain objects of different classes (indeed, that's
+usually why we use them)
+\end{itemize}
+Empty vectors can be created with the \code{vector()} function.
+\end{frame}
+
+\section{Numerical}
+
+\begin{frame}[fragile]
+\frametitle{Precision}
+\begin{itemize}
+\item Just as we can summarize data to different levels of precision (i.e., number of decimal places) so too can the computer.
+\item The memory footprint of variables with different precision is dependent on the number of bits used to store them.
+\item R has integers and doubles.  Other languages have additional precisions (e.g., single or float, long int, \ldots).
+\item Be careful about computation near the boundaries!  In some languages can get bizarre negative numbers with high magnitude if you go over.
+\end{itemize}
+\begin{center}
+\begin{tabular}{l || l | l l}
+\textbf{Type} & \textbf{Description} & \textbf{Bits} & \textbf{Range} \\
+\hline
+\hline
+\textbf{Integer} & Whole number & 32 & $-2 \times 10^{9}$ to $2 \times 10^{9}$ \\ 
+\hline
+\textbf{Double} & Decimal numbers & 53 & $2 \times 10^{-308}$ to \\ 
+                           &                                   &       & $2 \times 10^{308}$ in absolute value
+\end{tabular}
+\end{center}
+\end{frame}
+
+\begin{frame}{How numbers are treated in R}
+\begin{itemize}
+\item
+Numbers in R a generally treated as numeric objects (i.e. double
+precision real numbers)
+\item
+If you explicitly want an integer, you need to specify the \code{L}
+suffix
+\item
+Ex: Entering \code{1} gives you a numeric object; entering \code{1L}
+explicitly gives you an integer. 
+\item
+There is also a special number \code{Inf} which represents infinity;
+e.g.  \code{1 / 0}; \code{Inf} can be used in ordinary calculations;
+e.g. \code{1 / Inf} is 0
+\item Values near the borders of precision will be represented either as 0 or \code{Inf}
+\item
+The value \code{NaN} represents an undefined value (``not a number'');
+e.g. 0 / 0; \code{NaN} can also be thought of as a missing value (more
+on that later)
+\end{itemize}
+\end{frame}
+
+
+
+\section{Vectors}
+
+\begin{frame}[fragile]
+\frametitle{Setting variables: vectors}
+\par Set the variables \texttt{x}, \texttt{y}, and \texttt{z} to vector values.
+\begin{block}{R Terminal}
+<<>>=
+# c() concatenates elements in a vector
+x = c(1, 2, 3)
+# assign value on right to variable on left
+y <- 1:3
+# assign value on left to variable on right
+seq(from=1, to=3, by=1) -> z
+@
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Use logical values specific elements}
+Logicals can be used to select specific values. 
+\begin{columns}
+\column{0.5\textwidth}
+\begin{block}{R Terminal}
+<<>>= 
+age=c(35,47,24,32,51)
+select <- c(T, F, T, F, T)
+age[select]
+@ 
+\end{block}
+\column{0.5\textwidth}
+\begin{block}{R Terminal}
+<<>>= 
+age=c(35,47,24,32,51)
+sex=c('M','M','F','M','F')
+age[sex=="F"]
+@ 
+\end{block}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Mixing Objects}
+\begin{block}{R Terminal}
+<<>>=
+x <- c('a', 1:3)
+y <- c(T, 1, 'a')
+z <- c(1:5, F)
+@
+\end{block}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Explicit Coercion}
+\framesubtitle{Setting variables to be of a specific type}
+\begin{block}{R Terminal}
+<<>>=
+# enforcing x to have only numeric values
+x <- as.numeric(c('a', 1:3)) 
+
+# forcing y to be only TRUE or FALSE
+y <- as.logical(c(T, 1, 'a'))
+
+# forcing z to be a string
+z <- as.character(c(1:5,F))
+@
+\end{block}
+\begin{center}
+These examples are not exhaustive, most objects have a function that can be used to force variables to be represented as that type.
+\end{center}
+\end{frame}
+
+\section{Factors}
+
+\begin{frame}[fragile]
+\frametitle{Vector of strings}
+\begin{block}{R Terminal}
+<<>>=
+gender <- c('M', 'F', 'M', 'M', 'F', 'F')
+@
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Factors look like strings}
+\begin{block}{R Terminal}
+<<>>=
+gender <- as.factor(c('M', 'F', 'M', 'M', 'F', 'F'))
+@
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Factors look like strings, but \ldots}
+\begin{itemize}
+\item Factors are categorical variables
+\item ``Levels'' represent the categories in the data
+\item Facilitate tabulating number of each class in the factor
+\end{itemize}
+\begin{block}{R Terminal}
+<<>>=
+gender <- as.factor(c('M', 'F', 'M', 'M', 'F', 'F'))
+levels(gender)
+table(gender)
+@
+\end{block}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Can tabulate relationships between factors}
+
+\begin{block}{R Terminal}
+<<>>=
+gender <- as.factor(c('M', 'F', 'M', 'M', 'F', 'F'))
+race <- as.factor(c('AA','AA','AA', 'CA','CA', 'CA'))
+table(gender, race)
+@
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Determining intervals of numbers}
+
+\begin{block}{R Terminal}
+<<>>=
+gender <- as.factor(c('M', 'F', 'M', 'M', 'F', 'F'))
+age <- c(21, 34, 73, 12, 40, 10)
+ageFactor <- cut(age,c(0,18,100))
+ageFactor
+table(gender, ageFactor)
+adultChild <- cut(age,c(0,18,100), labels=c('child','adult'))
+adultChild
+divideAges <- cut(age, breaks=3)
+divideAges
+@
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Subsetting factors}
+Factors can be subset like vectors with [ ]
+\begin{block}{R Terminal}
+<<>>=
+gender <- as.factor(c('M', 'F', 'M', 'M', 'F', 'F'))
+gender[c(1,3,5)]
+gender[gender=='M']
+@
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Subsetting factors}
+\begin{columns}[T]
+\column{0.5\textwidth}
+Factors can be subset like vectors with [ ]
+\begin{block}{R Terminal}
+<<>>=
+gender <- as.factor(c('M', 'F', 
+	'M', 'M', 'F', 'F'))
+gender[c(1,3,5)]
+gender[gender=='M']
+@
+\end{block}
+Note that both levels (categories) are kept when subsetting
+\column{0.5\textwidth}
+This code will keep only the factors in the subset
+\begin{block}{R Terminal}
+<<>>=
+genderM <- as.factor(
+	as.character(gender[gender == 
+		'M']))
+genderM
+@
+\end{block}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Naming and subsetting factors}
+Like vectors, factors can also be named and subset by name
+\begin{block}{R Terminal}
+<<>>=
+names(gender) <- c('Bob', 'Jill', 'Mark', 'Sam', 'Liz', 'Julie')
+gender[c('Bob','Liz')]
+@
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Caution about factors}
+\begin{itemize}
+\item Case and space sensitive
+\item Small typos can mangle the structure and leave ghost categories
+\item Can slow or complicate output when subsetting from a large set of characters, such as genes
+\item Strings read in from a file are interpreted as factors by default
+\item Using factors in place of strings can sometimes introduce uninterpretable error messages or strange results
+\end{itemize}
+\end{frame}
+
+\subsection{Exercises}
+
+\begin{frame}[fragile]
+\frametitle{Exercises}
+\begin{enumerate}
+\item The dataset \texttt{esoph} in R contains clinical data from a case-control study of esophageal cancer in Ile-et-Vilaine, France.  Define new factors that describe the age group, alcohol usage, and tobacco with
+\begin{block}{R Terminal}
+<<>>=
+ageE <- esoph$agegp
+alcE <- esoph$alcgp
+tobE <- esoph$tobgp
+@
+\end{block}
+\item Tabulate the smoking usage per age group.  Alcohol usage.
+\item What happens when you tabulate all three factors using the command \texttt{table(ageE, alcE, tobE)}?
+\item Subset the age groups to samples under 55 and tabulate smoking usage per age group in this subset.  Be sure that the older age groups do not appear in your summary table.
+\end{enumerate} 
+\end{frame}
+
+\section{Matrices}
+
+\subsection{Creating matrices}
+
+\begin{frame}[fragile]
+\frametitle{Creating matrices}
+\begin{itemize}
+\item Matrices are like two dimensional vectors
+\item Generate a matrix with the function \texttt{matrix}
+\end{itemize}
+\begin{block}{R Terminal}
+<<>>=
+mat1 <- matrix(1, nrow=3, ncol=2)
+matA <- matrix('a', nrow=3, ncol=5)
+@
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Transposing matrices}
+The order of rows and columns can be flipped (transposed) with the function \texttt{t}
+\begin{block}{R Terminal}
+<<>>=
+mat1 <- matrix(1, nrow=3, ncol=2)
+matA <- matrix('a', nrow=3, ncol=5)
+t(mat1)
+t(matA)
+@
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Finding the dimensionality of matrices}
+\begin{block}{R Terminal}
+<<>>=
+mat1 <- matrix(1, nrow=3, ncol=2)
+# number of rows
+nrow(mat1)
+# number of columns
+ncol(mat1)
+# dimensions of rows and columns
+dim(mat1)
+# total number of elements
+length(mat1)
+@
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Creating non-constant matrices}
+\begin{block}{R Terminal}
+<<eval=T>>=
+matrix(c(1:8), nrow=2, ncol=4)
+@
+\end{block}
+By default, data is decomposed ``by columns''
+
+The first nrow elements of data form the first column, second the second column, etc
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Creating non-constant matrices}
+\begin{columns}[T]
+
+\column{0.5\textwidth}
+
+Creating matrices ``by column''
+\begin{block}{R Terminal}
+<<eval=T>>=
+matrix(c(1:8), nrow=2, ncol=4)
+@
+\end{block}
+\vspace{12pt}
+The first nrow elements of data form the first column, second the second column, etc
+
+
+\column{0.5\textwidth}
+Creating matrices ``by row''
+
+\begin{block}{R Terminal}
+<<eval=T>>=
+matrix(c(1:8), nrow=2, ncol=4,
+	 byrow=T)
+@
+\end{block}
+The first ncol elements of data form the first row, second the second row, etc
+
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Combining vectors to form matrices}
+
+\begin{block}{R Terminal}
+<<>>=
+age <- c(1, 10, 20, 30, 40, 50, 60)
+height <- c(1.5, 4, 6, 6, 6, 5.9, 5.8)
+# combine vectors by column
+ageHeightC <- cbind(age, height)
+ageHeightC
+# combine vectors by row
+ageHeightR <- rbind(age, height)
+ageHeightR
+@
+\end{block}
+
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Combining vectors to form matrices}
+
+\par Take care when combining vectors of mixed size
+
+\begin{block}{R Terminal}
+<<>>=
+age <- c(1, 10, 20, 30, 40)
+height <- c(1.5, 4, 6, 6, 6, 5.9, 5.8)
+# combine vectors by column
+ageHeightCM <- cbind(age, height)
+ageHeightCM
+# combine vectors by row
+ageHeightRM <- rbind(age, height)
+ageHeightRM
+@
+\end{block}
+
+\end{frame}
+
+\subsection{Subsetting matrices}
+
+\begin{frame}[fragile]
+\frametitle{Selecting rows, columns, and elements of matrices}
+Square bracket notation still selects entries
+\begin{block}{R Terminal}
+<<>>=
+x <- matrix(c(1:8), nrow=2, ncol=4)
+# select a row of data
+x[1,]
+# select two rows of data
+x[1:2,]
+# select a column of data
+x[,3]
+# selecting an element
+x[1,2]
+x[2,1]
+@
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Naming rows and columns of matrices}
+It is good practice to name the rows and columns of your matrix so that you can refer to your data by name
+\begin{block}{R Terminal}
+<<>>=
+age <- c(1, 10, 20, 30, 40, 50, 60)
+height <- c(1.5, 4, 6, 6, 6, 5.9, 5.8)
+people <- c('Bob', 'Jill', 'Mark', 'Sam', 'Liz', 'Julie', 'Isaac')
+peopleInfo <- cbind(age, height)
+rownames(peopleInfo) <- people
+colnames(peopleInfo) <- c("age", "height")
+@
+\end{block}
+\textit{Note:} For reasons I will never understand, the commands \texttt{row.names} and \texttt{rownames} can be used interchangeably, but there is \emph{no} function \texttt{col.names}.
+\end{frame}
+
+\subsection{Operations on matrices}
+
+\begin{frame}[fragile]
+\frametitle{Arithmetic functions and matrices}
+Like vectors, by default arithmetic functions are applied to each element of the matrix
+\begin{block}{R Terminal}
+<<>>=
+peopleInfo + peopleInfo
+peopleInfo - peopleInfo
+peopleInfo * peopleInfo
+@
+\end{block}
+Matrix multiplication can be performed with
+\begin{block}{R Terminal}
+<<>>=
+peopleInfo %*% t(peopleInfo)
+@
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Summary statistics}
+The command \texttt{summary} summarizes matrix columns
+\begin{block}{R Terminal}
+<<>>=
+summary(peopleInfo)
+@
+\end{block} 
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Summary statistics}
+\begin{itemize}
+\item Summary statistical functions for vectors (e.g., \texttt{mean}, \texttt{sd}, \texttt{min}, etc) can be applied to matrices. 
+\item \textit{Be careful}, some functions are applied to the entire matrix, some rows, and some columns.
+\end{itemize}
+\begin{block}{R Terminal}
+<<>>=
+mean(peopleInfo)
+sd(peopleInfo)
+min(peopleInfo)
+@
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Controlling matrix means and sums}
+Means and sums can be computed across rows or columns of a matrix using the commands: \texttt{colSums}, \texttt{rowSums}, \texttt{colMeans}, and \texttt{rowMeans}
+\begin{block}{R Terminal}
+<<>>=
+colSums(peopleInfo)
+rowSums(peopleInfo)
+colMeans(peopleInfo)
+rowMeans(peopleInfo)
+@
+\end{block}
+\end{frame}
+
+\subsection{Data Frames}
+
+\begin{frame}[fragile]
+\frametitle{Mixing data types in matrices}
+\begin{block}{R Terminal}
+<<>>=
+age <- c(1, 10, 20, 30, 40, 50, 60)
+height <- c(1.5, 4, 6, 6, 6, 5.9, 5.8)
+people <- c('Bob', 'Jill', 'Mark', 'Sam', 'Liz', 'Julie', 'Isaac')
+gender <- c('M', 'F', 'M', 'M', 'F', 'F', 'M')
+peopleInfo <- cbind(age, height, gender)
+rownames(peopleInfo) <- people
+colnames(peopleInfo) <- c("age", "height", "gender")
+@
+\end{block}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Mixing data types in \texttt{data.frame} objects}
+\par \texttt{data.frames} are designed to be like matrices, but allow for a mixture of data types
+\begin{block}{R Terminal}
+<<>>=
+age <- c(1, 10, 20, 30, 40, 50, 60)
+height <- c(1.5, 4, 6, 5.10, 5.4, 5.4, 5.8)
+name <- c('Bob', 'Jill', 'Mark', 'Sam', 'Liz', 'Julie', 'Isaac')
+gender <- as.factor(c('M', 'F', 'M', 'M', 'F', 'F', 'M'))
+peopleInfoDF <- data.frame(name, age, height, gender)
+@
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{The magic of \texttt{data.frame} objects}
+\begin{block}{R Terminal}
+<<>>=
+peopleInfoDF
+@
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{The magic of \texttt{data.frame} objects}
+\begin{block}{R Terminal}
+<<>>=
+peopleInfoDF
+@
+\end{block}
+Note automatic heading labels. 
+Columns can be referenced with [ ] notation or with \$ notation 
+\begin{block}{R Terminal}
+<<>>=
+peopleInfoDF[,'age']
+peopleInfoDF$age
+peopleInfoDF$age["Jill"]
+@
+\end{block} 
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Summary of \texttt{data.frame} objects}
+\begin{block}{R Terminal}
+<<>>=
+peopleInfoDF
+summary(peopleInfoDF)
+@
+\end{block}
+What does it look like is the data type of each column?
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Summary of \texttt{data.frame} objects}
+\begin{block}{R Terminal}
+<<>>=
+peopleInfoDF
+summary(peopleInfoDF)
+@
+\end{block}
+\begin{columns}
+\column{0.5\textwidth}
+Object type based on output of \texttt{peopleInfoDF}
+\begin{description}
+\item[name] string
+\item[height] integer
+\item[height] float
+\item[gender] string
+\end{description}
+
+\column{0.5\textwidth}
+Output type based on summary
+\begin{description}
+\item[name] factor
+\item[height] float
+\item[height] float
+\item[gender] factor
+\end{description}
+\end{columns}
+\textbf{This automatic object select is incredibly powerful and generally helpful, but at times can do unexpected things to your analysis.}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Coercing object types in data frames}
+Converting factors to strings
+\begin{block}{R Terminal}
+<<>>=
+peopleInfoDF$name <- as.character(peopleInfoDF$name)
+peopleInfoDF
+summary(peopleInfoDF)
+@
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Operations on data frames}
+\begin{itemize}
+\item Can label rows and columns with the functions \texttt{rownames} and \texttt{colnames}
+\begin{block}{R Terminal}
+<<>>=
+rownames(peopleInfoDF) <- name
+peopleInfoDF['Bob','age']
+peopleInfoDF$age['Bob']
+@
+\end{block}
+\item Statistical summary functions (e.g., \texttt{mean}) may fail for mixed data, but are still useful for data frames containing numeric values
+\end{itemize}
+\begin{block}{R Terminal}
+<<>>=
+mean(peopleInfoDF)
+mean(peopleInfoDF[,c('age','height')])
+@
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Reordering data frames}
+Data frames can be reordered manually with the \texttt{order} command
+
+\begin{block}{R Terminal}
+<<>>=
+# order by age (lowest to highest)
+ageOrder <- order(peopleInfoDF[,'age'])
+peopleInfoDF[ageOrder,]
+# order by height (highest to lowest)
+heightOrder <- order(peopleInfoDF[,'height'], decreasing=T)
+peopleInfoDF[heightOrder,]
+@
+\end{block}
+
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Reordering data frames}
+Data frames can be reordered directly \texttt{order} command
+
+\begin{block}{R Terminal}
+<<>>=
+# order by age (lowest to highest)
+peopleInfoDF[order(age),]
+# order by height (highest to lowest)
+peopleInfoDF[order(-height),]
+# order by height, then age
+peopleInfoDF[order(-height,age),]
+# order gender in alphabetical order
+peopleInfoDF[order(gender),]
+@
+\end{block}
+
+\end{frame}
+
+\subsection{Exercises}
+
+\begin{frame}[fragile]
+\frametitle{Exercises}
+\begin{enumerate}
+\item In the following example, which matrix element does \texttt{x[6]} reference.  What can you conclude about how R is storing the matrix? \textit{Hint: compare to} \texttt{x[2,3]} \textit{and} \texttt{x[3,2]}.
+\begin{block}{R Terminal}
+<<>>=
+x <- matrix(c(1:12), nrow=3, ncol=4)
+rownames(x) <- letters[1:3]
+colnames(x) <- letters[1:4]
+x[6]
+@
+\end{block}
+\item In the example above, what happens when you try to access the non-existent element \texttt{x[4,2]}?  What about \texttt{x["e", "c"]}? 
+\end{enumerate}
+\end{frame}
+
+\section{Lists}
+
+\begin{frame}[fragile]{Lists}
+\begin{itemize}
+\item Lists are a special type of vector that can contain elements of
+different classes and sizes. 
+\item Elements of lists are even allowed to be other lists!
+\item Lists are a very important data type in R.
+\item Highly efficient means of recalling large portions of data (similar to hashtables in other programming languages)
+\item Dimension names of matrices are stored as lists
+\end{itemize}
+\begin{block}{R Terminal}
+<<list1>>=
+x <- list(1, "a", TRUE, 1 + 4i)
+x
+dimnames(peopleInfoDF)
+@ 
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Naming list elements}
+\begin{block}{R Terminal}
+<<list1>>=
+x <- list(1, "a", TRUE, 1 + 4i)
+names(x) <- c('int', 'char', 'logic', 'complex')
+@ 
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Accessing list elements}
+\begin{itemize}
+\item {[ ]} will return a subset of list elements \emph{as another list} 
+\item {[[ ]]} will return the value for \emph{one} specific list element
+\item List elements can be referenced by index or by name
+\end{itemize}
+\begin{block}{R Terminal}
+<<list1>>=
+x <- list(1, "a", TRUE, 1 + 4i)
+names(x) <- c('int', 'char', 'logic', 'complex')
+x[1]
+x[['char']]
+x[1:2]
+x[[1:2]]
+@ 
+\end{block}
+\end{frame}
+
+
+\subsection{Exercises}
+
+\begin{frame}{Exercise}
+
+\par The object \texttt{iris} in the datasets package contains a listing of observations of ``Sepal.Length'', ``Sepal.Width'', ``Petal.Length'', ``Petal.Width'', and ``Species'' used for some of Fisher's foundational work.  
+
+\begin{enumerate}
+\item Create a list that describes the attributes of the petal for each species.  \textit{Hint: I first found which species were in the list, subset the data for each species, and then set up my list object}
+\item Using this list object, find the mean ``Petal.Length'' and petal area (length $\times$ width) of the species setosa.
+\end{enumerate}
+
+
+
+\end{frame}
+
+
+\section{Missing values}
+
+\subsection{Types of missing values}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+\begin{frame}[fragile]{Missing Values}
+Missing values are denoted by \code{NA} or \code{NaN} for undefined
+mathematical operations.
+\begin{itemize}
+\item
+\code{is.na()} is used to test objects if they are \code{NA}
+\item
+\code{is.nan()} is used to test for \code{NaN}
+\item
+\code{NA} values have a class also, so there are integer \code{NA},
+character \code{NA}, etc.  
+\item
+A \code{NaN} value is also \code{NA} but the converse is not true
+\end{itemize}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+\begin{frame}[fragile]{Missing Values}
+<<missingValues>>=
+x <- c(1, 2, NA, 10, 3)
+is.na(x)
+is.nan(x)
+x <- c(1, 2, NaN, NA, 4)
+is.na(x)
+is.nan(x)
+@
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+\subsection{Removing missing values}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+\begin{frame}[fragile]{Removing NA Values}
+A common task is to remove missing values (\code{NA}s).
+<<missingValues2>>=
+x <- c(1, 2, NA, 4, NA, 5)
+bad <- is.na(x)
+x[!bad]
+@ 
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+\begin{frame}[fragile]{Removing NA Values}
+What if there are multiple things and you want to take the subset with
+no missing values?
+<<missingValues3>>=
+x <- c(1, 2, NA, 4, NA, 5)
+y <- c("a", "b", NA, "d", NA, "f")
+good <- complete.cases(x, y)
+good
+x[good]
+y[good]
+@ 
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+\begin{frame}[fragile]{Removing NA Values}
+<<missingValues4>>=
+airquality[1:6, ]
+good <- complete.cases(airquality)
+airquality[good, ][1:6, ]
+@ 
+\end{frame}
+
+\subsection{Exercises}
+
+\begin{frame}
+\frametitle{Exercises}
+\begin{enumerate}
+\item Compute the mean and median ozone levels measured in the \texttt{airquality} dataset.
+\item Use \texttt{is.na} to find only those values of ozone that aren't NA. Compute the mean and median of these values.
+\item Looking at the help for mean and median, determine how to compute the mean and median ozone levels measured in the \texttt{airquality} dataset without relying on the \texttt{is.na} function.
+\item Find the median solar radiation for each measurement in which the ozone is above the median value, after accounting for \code{NA}'s.  How does this value compare to the median value found using \code{complete.cases}?
+\end{enumerate}
+\end{frame}
+
+
+
+\end{document}
