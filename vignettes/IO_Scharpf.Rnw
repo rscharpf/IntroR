@@ -1,0 +1,440 @@
+\documentclass[ignorenonframetext,article,shortnames]{beamer}
+\usetheme{Darmstadt}
+%%% Adding an informative footline (this is default in Boadilla and Madrid)
+\useoutertheme{infolines}
+\mode<presentation>
+\usepackage{amsmath}
+\usepackage{multicol}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{url}
+\usenavigationsymbolstemplate{}
+
+\newcommand{\R}{\textsf{R}}
+\newcommand{\Rpackage}[1]{\textit{#1}}
+\newcommand{\Rfunction}[1]{\texttt{#1}}
+\newcommand{\Robject}[1]{\texttt{#1}}
+\newcommand{\Rclass}[1]{\Robject{#1}}
+\newcommand{\graphics}{\Rpackage{graphics}}
+\newcommand{\Sthree}{\textsf{S3}}
+\newcommand{\Sfour}{\textsf{S4}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title[Introduction to R]{Introduction to R}
+
+\subtitle{Reading and Writing Data}
+
+\author[]{Rob Scharpf}
+
+\institute[JHU]{
+  Department of Oncology\\
+  Johns Hopkins School of Medicine
+}
+
+\date{October 31, 2012}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+<<options>>=
+options(width=30)
+library(xtable)
+@
+
+\frame{
+  \maketitle
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+<<>>=
+s <- function(){
+	Sweave("IO_Scharpf.Rnw")
+	tools::texi2pdf("IO_Scharpf.tex")
+}
+@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{frame}[c]{Outline}
+% Table of Contents
+%\begin{multicols}{2}
+%\footnotesize
+%\tableofcontents
+%\end{multicols}
+%%\end{center}
+%\end{frame}
+
+\begin{frame}
+  \frametitle{Text editors}
+  \begin{itemize}
+  \item Please do all exercises for this I/O vignette using a text
+    editor, preferably one with syntax highlighting for \R{}
+  \item Learn to cut and paste without a mouse
+  \end{itemize}
+\end{frame}
+
+<<birddata>>=
+Wingcrd <- c(59, 55, 53.5, 55, 52.5, 57.5, 53, 55)
+Tarsus <- c(22.3, 19.7, 20.8, 20.3, 20.8, 21.5, 20.6, 21.5)
+bird.data <- data.frame(Wingcrd=Wingcrd, Tarus=Tarsus)
+bird.data
+xtable(bird.data)
+@
+
+\begin{frame}[fragile]
+  \frametitle{Some data}
+  \framesubtitle{Exercise 1: Get the data into \R{} manually}
+<<bird.data.table,results=tex,fig=FALSE>>=
+print(xtable(bird.data))
+@
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Getting data into R}
+\begin{frame}[fragile]
+  \frametitle{Getting data into \R{}}
+  \framesubtitle{Type it in}
+<<birddata>>=
+Wingcrd <- c(59, 55, 53.5, 55, 52.5, 57.5, 53, 55)
+Tarsus <- c(22.3, 19.7, 20.8, 20.3, 20.8, 21.5, 20.6, 21.5)
+bird.data <- data.frame(Wingcrd=Wingcrd, Tarsus=Tarsus)
+bird.data
+@
+{\tiny Reference \R{} book}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Getting data into \R{}}
+  \framesubtitle{Type it in}
+  Problems with this approach:
+  \begin{itemize}
+  \item Not practical
+  \item Typos / reproducibility
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Getting the data out of \R{}}
+
+  Exercise 2: Write the bird data to a file on your laptop as\\
+  (i) a tab-delimited file\\
+  (ii) a comma-delimited file\\
+  (iii) a comma-delimited file without rownames or header
+  \vspace{2em}\\
+  Hint: See the helpfiles for \Rfunction{?write.table} and \Rfunction{write.csv}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Getting the data out of \R{}}
+  \framesubtitle{Exercise 2 solutions}
+<<exercise2solution>>=
+write.table(bird.data)
+write.table(bird.data, file="bird.txt")
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Getting the data out of \R{}}
+  \framesubtitle{Exercise 2 solutions}
+<<exercise2solutions2>>=
+write.csv(bird.data)
+write.csv(bird.data, file="bird.csv")
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Getting the data into \R{}}
+  \framesubtitle{\Rfunction{read.table} and derivatives}
+
+  Exercise 3: Read the tab-delimited file \texttt{bird.txt} and the
+  comma-delimited  \texttt{bird.csv}  \\
+  Hint: The analogs to \texttt{write.table} and \texttt{write.csv} are
+  \texttt{read.table} and \texttt{read.csv}, respectively.
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Getting the data into \R{}}
+  \framesubtitle{\Rfunction{read.table} and derivatives}
+
+<<exercise3solution>>=
+(dat <- read.table("bird.txt"))
+dat2 <- read.csv("bird.csv", row.names=1)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+  \frametitle{Tips for large data}
+    See the section ``Memory usage'' in the \texttt{read.table} help
+    file. In particular, note that
+  \begin{itemize}
+    \item \texttt{read.table} requires a lot of memory
+    \item \texttt{read.table} is meant for reading data.frames where
+      the columns have different classes (e.g., numeric, dates,
+      character strings, etc.)
+    \item For matrices (all columns have the same class), use \Rfunction{scan}
+  \end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Reading large data frames with \Rfunction{read.table}}
+  \begin{itemize}
+
+  \item Read the first couple of lines to determine the classes of the
+    columns. See the \texttt{nrows} argument to \Rfunction{read.table}.
+
+  \item Specifying \texttt{colClasses} can reduce memory and speed up
+    reading large data.  Unwanted columns can be indicated with
+    ``NULL''.
+
+  \end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{A more challenging \Rfunction{read.table} example}
+<<bigdata>>=
+y <- rep(letters, length.out=50e3)
+set.seed(1)
+dates <- sample(c("02/27/2012", "01/14/2012",
+		  "02/28/2012", "02/01/2012",
+		  "10/31/2012"),
+		length(y), replace=TRUE)
+dat <- data.frame(x=rnorm(50e3), y=y, date=dates,
+		  stringsAsFactors=FALSE)
+nr <- nrow(dat)
+index <- sample(seq_len(nr), 50)
+dat$date[index] <-  "-999"
+write.table(dat, file="bigdata.txt", row.names=FALSE)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{A more challenging \Rfunction{read.table} example}
+  Exercise 4: \\
+  (i) Read only columns 'x' and 'date' of \texttt{bigdata.txt}, using
+  the \Rclass{character} class for date.  \\
+  (ii) coerce the date variable to class \Rclass{Date}. See \texttt{?as.Date}\\
+  (iii) Suppose -999 was the code used for missing dates.  Replace -999 with
+  \R{}'s representation for missing data (see \texttt{?NA})\\
+  (iv) How many observations were collected after January 30, 2012?
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{A more challenging \Rfunction{read.table} example}
+  Solution to Exercise 4:
+<<solution4>>=
+header <- read.table("bigdata.txt", nrows=3, header=TRUE)
+str(header)
+dat <- read.table("bigdata.txt",
+		  colClasses=c("numeric", "NULL", "character"),
+		  header=TRUE)
+dat$date[dat$date=="-999"] <- NA
+dat$date <- as.Date(dat$date, "%m/%d/%Y")
+## a calculation on date
+sum(dat$date > as.Date("01/30/2012", "%m/%d/%Y"), na.rm=TRUE)
+table(dat$date > as.Date("01/30/2012", "%m/%d/%Y"))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Large data example 2}
+<<exercise5data>>=
+bigmatrix <- replicate(100, rnorm(10e3))
+write.table(bigmatrix, file="matrix.csv", sep=",",
+	    row.names=FALSE, col.names=FALSE,
+	    quote=FALSE)
+@
+Remark: \Rfunction{write.matrix} would be much more efficient than \Rfunction{write.table}
+\end{frame}
+
+\begin{frame}[fragle]
+  \frametitle{Reading matrices}
+  Exercise 5:  \\
+  (i) Read the file \texttt{matrix.csv} using \Rfunction{scan} and
+  assign the result to \texttt{bigvector}\\
+  (ii) What are the dimensions of \texttt{bigvector}\\
+  (iii) Coerce \texttt{bigvector} to a matrix, say \texttt{bigmatrix2}, with the
+  same dimensions as the simulated data (see \Rfunction{matrix})\\
+  (iv) Use \Rfunction{all.equal} to see whether we have recovered the
+  simulated data\\
+  (v) Compare the \Rfunction{system.time} for reading the data with
+  \Rfunction{scan} to the \Rfunction{system.time} for
+  \Rfunction{read.csv}.
+\end{frame}
+
+\begin{frame}[fragile]
+<<solution5>>=
+bigvector <- scan("matrix.csv", sep=",")
+bigmatrix2 <- matrix(bigvector, 10e3, 100, byrow=TRUE)
+all.equal(bigmatrix, bigmatrix2)
+rm(bigmatrix2, bigvector) ; invisible(gc(verbose=FALSE))
+system.time(scan("matrix.csv", sep=","))
+system.time(read.csv("matrix.csv"))
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+  \frametitle{Saving \R{} objects}
+  It is often conventient to save a representation of an \R{} object
+  using the \R{} function \Rfunction{save}.  \R{} objects should be
+  saved with the file extension \texttt{.rda} or \texttt{.RData}.
+
+  \vspace{2em}
+
+  Exercise 6: \\
+  (i) Use the function \Rfunction{save} to save the \texttt{bigmatrix}
+  object.  \\
+  (ii) Remove the object \Robject{bigmatrix} from your workspace (see
+  \Rfunction{rm}), and check that this object no longer exists (see
+  \Rfunction{exists}).  \\
+  (iii) Use the function \Rfunction{load} to bring the object
+  back into your workspace.\\
+  (iv) Compare the size of the file \texttt{matrix.csv} to the size of
+  the \texttt{.rda} file.\\
+  (v) Compare the \Rfunction{system.time} for loading the
+  \texttt{.rda} file to the \Rfunction{system.time} for reading the
+  \texttt{.csv} file with \Rfunction{scan}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Saving \R{} objects}
+
+  Solution 6:
+<<solution6>>=
+save(bigmatrix, file="bigmatrix.rda", compression_level=9)
+rm(bigmatrix); isTRUE(!exists("bigmatrix"))
+load("bigmatrix.rda")
+isTRUE(exists("bigmatrix"))
+system.time(load("bigmatrix.rda"))
+system.time(scan("matrix.csv", sep=","))
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Files with headers}
+\begin{itemize}
+
+\item Files that we wish to import in \R{} often contain experimental
+  meta-data in the header that is not part of the data
+
+\item Here, we use the \Rfunction{cat} to prepend experimental
+  metadata to the first 10 rows of the matrix \Robject{bigmatrix}:
+\end{itemize}
+
+<<addheader>>=
+cat("Date: 10/31/2012\nExp. metadata\nblah blah blah\n",
+    bigmatrix[1:10, ], file="matrix_w_header.csv")
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Files with headers}
+
+  Exercise 7:\\
+  (i) Read in the header of \verb+matrix_w_header.csv+ using
+  \Rfunction{read.table}.  Hint: Specify argument \texttt{sep} such
+  that each row in the header is read as a single element (i.e., 3
+  rows, 1 column).\\
+  (ii) Use the function \Rfunction{readLines} to read in the header\\
+  (iii) Read in the data portion of \verb+matrix_w_header.csv+ using
+  \Rfunction{scan}
+  or \Rfunction{read.table}.\\
+  (iv) Compare the data portion to the first 10 rows of the
+  \Robject{bigmatrix} using the function \Rfunction{all.equal}.  Is
+  this result expected? (Hint: see helpfile for \Rfunction{cat})
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Files with headers}
+<<solution7>>=
+tryCatch(header <- read.table("matrix_w_header.csv",
+			      nrows=3),
+	 error=function(e) return("try again"))
+header <- read.table("matrix_w_header.csv",
+		     nrows=3, sep="\t")
+header
+x <- scan("matrix_w_header.csv", skip=nrow(header))
+X <- matrix(x, nr=10, byrow=FALSE)
+all.equal(X, bigmatrix[1:10, ])
+@
+\end{frame}
+
+\begin{frame}
+  \frametitle{Importing Excel data}
+
+  \begin{itemize}
+
+  \item easiest option is to export the excel data as a tab-delimited
+    ascii file and import using \Rfunction{read.table}
+
+  \item if you are stuck with a \texttt{.xls} file, the \R{} package
+    \Rpackage{xlsx} has utilities for reading specific rows and
+    columns of an excel spreadsheet
+
+  \end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Importing/Exporting files from other statistical software}
+
+  \begin{itemize}
+
+  \item \R{} can import data from other statistical software such as
+    SPSS, Stata, and SAS.
+
+  \item There are also utilities for writing data in an appropriate
+    format for other statistical software
+
+  \item See the \R{} package \Rpackage{foreign}
+
+  \end{itemize}
+
+\end{frame}
+
+%\begin{frame}
+%  \frametitle{Things we did not cover}
+%  \begin{itemize}
+%
+%     \item interacting with databases.  See the \R{} package \Rpackage{ROBC}
+%
+%     \item working with internet file connections
+%
+%
+%  \end{itemize}
+%
+%\end{frame}
+
+<<cleanUp>>=
+unlink(c("bird.csv", "bird.txt"))
+unlink("matrix.csv")
+unlink("matrix_w_header.csv")
+unlink("bigmatrix.rda")
+unlink("bigdata.txt")
+@
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}
+

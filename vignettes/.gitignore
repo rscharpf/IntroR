@@ -10,3 +10,7 @@
 *.el
 !syllabus.tex
 !syllabus.pdf ## maintained by hand
+IO.org
+IO.R
+.Rhistory
+*.nav
